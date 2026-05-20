@@ -1,0 +1,48 @@
+/* الأكواد السابقة لـ body و system-window تبقى كما هي وتضاف هذه بالأسفل: */
+
+body {
+    margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: #050911; color: #ffffff;
+    display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background 0.8s ease;
+}
+.system-window {
+    background: rgba(6, 15, 30, 0.9); border: 2px solid #00d2ff; border-radius: 12px; padding: 25px;
+    width: 90%; max-width: 450px; box-shadow: 0 0 25px rgba(0, 210, 255, 0.3); text-align: center; backdrop-filter: blur(10px); transition: all 0.5s ease;
+}
+.system-divider { border: 0; height: 1px; background: linear-gradient(to right, transparent, #00d2ff, transparent); margin: 15px 0; }
+.badge-container { margin-bottom: 15px; }
+.rank-badge { background: rgba(0, 210, 255, 0.2); border: 1px solid #00d2ff; padding: 5px 15px; border-radius: 20px; font-size: 14px; text-shadow: 0 0 5px #00d2ff; }
+.level-value { font-size: 38px; font-weight: bold; color: #00d2ff; display: block; margin-top: 5px; text-shadow: 0 0 10px #00d2ff; }
+.subs-container { margin: 20px 0; font-size: 16px; text-align: right; }
+.highlight { color: #00d2ff; font-weight: bold; }
+.progress-bar { background: #0b1a30; border: 1px solid #00d2ff; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 25px; }
+.progress-fill { background: linear-gradient(90deg, #0088cc, #00d2ff); width: 0%; height: 100%; box-shadow: 0 0 10px #00d2ff; transition: width 1s ease; }
+.skills-section { text-align: right; margin-bottom: 20px; }
+.skills-section ul { list-style: none; padding: 0; }
+.skills-section li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+
+.comment-box { background: rgba(0, 210, 255, 0.05); border-right: 3px solid #00d2ff; padding: 12px; border-radius: 4px; text-align: right; margin-bottom: 20px; }
+.comment-user { color: #ffd700; font-size: 14px; margin: 4px 0; font-weight: bold; }
+.comment-text { font-style: italic; font-size: 13px; color: #eee; }
+
+/* 🤝 صندوق دعم الحلفاء */
+.alliance-box { background: rgba(15, 6, 30, 0.6); border-right: 3px solid #ffd700; padding: 12px; border-radius: 4px; text-align: right; margin-bottom: 20px; }
+.alliance-link { display: inline-block; background: linear-gradient(135deg, #cc9900, #ffd700); color: #000 !important; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px; margin-top: 8px; box-shadow: 0 0 8px #ffd700; transition: transform 0.2s; }
+.alliance-link:hover { transform: scale(1.05); }
+
+/* 👑 لوحة تحكم المسؤول الفخمة */
+.admin-panel { background: rgba(20, 0, 0, 0.4); border: 1px dashed #ff3333; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: right; }
+.admin-title { color: #ff3333; margin-top: 0; text-align: center; font-size: 14px; text-shadow: 0 0 5px #ff3333; }
+.admin-group { margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; }
+.admin-panel label { display: block; font-size: 12px; margin: 5px 0; color: #ff9999; }
+.admin-panel input, .admin-panel textarea { width: 100%; padding: 8px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 13px; }
+.admin-panel textarea { height: 50px; resize: none; }
+.admin-sub-btn { background: #ff3333; color: white; border: none; padding: 8px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+.admin-sub-btn:hover { background: #ff6666; }
+
+.system-btn { background: linear-gradient(135deg, #0b1a30, #005580); border: 1px solid #00d2ff; color: white; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+.system-btn:hover { background: #00d2ff; color: #050911; box-shadow: 0 0 15px #00d2ff; }
+.hidden { display: none !important; }
+
+/* تأثيرات الأطوار المتقدمة */
+.evolution-stage-2 { border-color: #00ff66; box-shadow: 0 0 25px rgba(0, 255, 102, 0.3); }
+.evolution-stage-3 { border-color: #ffd700; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); }

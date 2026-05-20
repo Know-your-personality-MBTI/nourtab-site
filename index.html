@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام ارتقاء مستوى القناة - لوحة السيطرة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="system-window" class="system-window evolution-stage-1">
+        <h2 id="system-title">واجهة نظام ارتقاء مستوى القناة</h2>
+        <hr class="system-divider">
+
+        <div class="badge-container">
+            <span id="rank-badge" class="rank-badge">الطور: الأزرق القياسي 🎬</span>
+        </div>
+
+        <div class="level-container">
+            <span class="level-label">المستوى الحالي:</span>
+            <span id="current-level" class="level-value">LV. 1</span>
+        </div>
+
+        <div class="subs-container">
+            <p>عدد المشتركين الحالي: <span id="subs-display" class="highlight">0</span></p>
+            <p>المشتركين المطلوبين للفل القادم: <span id="next-level-subs" class="highlight">100</span></p>
+        </div>
+
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+
+        <div class="skills-section">
+            <h3>🔮 المهارات والميزات النشطة:</h3>
+            <ul id="skills-list"></ul>
+        </div>
+
+        <div id="comment-summon-box" class="comment-box hidden">
+            <h3>💬 مهارة [استدعاء صوت الأوفياء]:</h3>
+            <p id="comment-username" class="comment-user">في انتظار استدعاء المسؤول...</p>
+            <p id="comment-text" class="comment-text">"لا توجد تعليقات مستدعاة حالياً"</p>
+        </div>
+
+        <div id="alliance-section" class="alliance-box hidden">
+            <h3>🤝 بوابات الدعم: القنوات الحليفة المستيقظة</h3>
+            <div id="alliance-container">
+                </div>
+        </div>
+
+        <div id="admin-panel" class="admin-panel hidden">
+            <h3 class="admin-title">👑 لوحة تحكم عاهل السيستم (أنت فقط تراها)</h3>
+            
+            <div id="admin-comment-inputs" class="admin-group hidden">
+                <label>👤 اسم المشترك المستدعى:</label>
+                <input type="text" id="input-fan-name" placeholder="مثال: عبدالرحمن _ مانهوا">
+                <label>📝 نص التعليق الأسطوري:</label>
+                <textarea id="input-fan-text" placeholder="اكتب تعليقه هنا..."></textarea>
+                <button id="save-comment-btn" class="admin-sub-btn">🔮 تثبيت الاستدعاء في السيستم</button>
+            </div>
+
+            <div id="admin-channel-inputs" class="admin-group hidden">
+                <label>📢 اسم قناة المتابع المدعوم:</label>
+                <input type="text" id="input-channel-name" placeholder="مثال: قناة ساسكي للمحترفين">
+                <label>🔗 رابط القناة الأصلي:</label>
+                <input type="url" id="input-channel-url" placeholder="https://youtube.com/@...">
+                <button id="save-channel-btn" class="admin-sub-btn">🔥 فتح بوابة الدعم للمتابع</button>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button id="update-btn" class="system-btn">🔄 تحديث بيانات السيستم الحالية</button>
+            <small style="display:block; margin-top:8px; color:rgba(255,255,255,0.3); font-size:10px;">اضغط مطولاً 5 ثوانٍ على الزر لتفعيل نمط المسؤول</small>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -30,7 +30,7 @@ const YOUTUBE_CHANNEL_ID = "UCG87U2_XvGf4c9_OOn707bA";
 
 // ===================================================================
 
-let liveSubsCount = null; // يبدأ فارغاً ولا يحمل أي قيمة احتياطية خرافية
+let liveSubsCount = null; // يبدأ فارغاً تماماً ولا يحمل أي قيمة احتياطية
 let systemErrorMessage = "جاري الاتصال بالنظام... 📡"; 
 
 let showAllComments = false;
@@ -47,39 +47,45 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// دالة سحب حية وصارمة: إما الرقم الفعلي أو إظهار رسالة خطأ صريحة
+// دالة جلب حية ومباشرة تستخدم خادم عدادات متوافق مع الحماية وبدون CORS
 async function fetchYouTubeSubs() {
     try {
         systemErrorMessage = "جاري التحديث... 🔄";
         updateSystemUI();
 
-        const webResponse = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/channel/' + YOUTUBE_CHANNEL_ID)}`);
+        // استخدام واجهة برمجة خفيفة ومباشرة للعدادات الحية لا تسبب حظراً للمتصفح
+        const response = await fetch(`https://api.shadiao.pro/subcount/youtube/${YOUTUBE_CHANNEL_ID}`);
         
-        if (!webResponse.ok) throw new Error("فشل استجابة السيرفر الوسيط");
+        if (!response.ok) throw new Error("فشل استجابة خادم الجلب المباشر");
 
-        const webWrapper = await webResponse.json();
-        const htmlText = webWrapper.contents;
+        const data = await response.json();
         
-        const match = htmlText.match(/"subscriberCountText":\s*\{\s*"simpleText":\s*"([^"]+)"/);
-        
-        if (match && match[1]) {
-            const subsText = match[1].replace(/[^\d.]/g, ''); 
-            let actualSubs = parseFloat(subsText);
-            
-            if (match[1].includes('K') || match[1].includes('ألف')) actualSubs *= 1000;
-            if (match[1].includes('M') || match[1].includes('مليون')) actualSubs *= 1000000;
+        // التحقق من بنية البيانات الراجعة للتأكد من وجود الرقم الحي
+        if (data && data.subscribers) {
+            let actualSubs = parseInt(data.subscribers);
             
             if (!isNaN(actualSubs) && actualSubs >= 0) {
-                liveSubsCount = Math.floor(actualSubs);
-                systemErrorMessage = ""; // مسح الخطأ لنجاح العملية
+                liveSubsCount = actualSubs;
+                systemErrorMessage = ""; // مسح الخطأ بنجاح العملية
             } else {
-                throw new Error("لم يتم العثور على صيغة رقمية صالحة");
+                throw new Error("البيانات الراجعة ليست رقماً صالحاً");
             }
         } else {
-            throw new Error("فشل قراءة كود المتابعين من صفحة يوتيوب");
+            // محاولة جلب بديلة من ميكانيزم المظهر العام في حال تبديل السيرفر تلقائياً
+            const fallbackRes = await fetch(`https://api.jienan.xyz/subcount/youtube/${YOUTUBE_CHANNEL_ID}`);
+            if (fallbackRes.ok) {
+                const fallbackData = await fallbackRes.json();
+                if (fallbackData && fallbackData.count) {
+                    liveSubsCount = parseInt(fallbackData.count);
+                    systemErrorMessage = "";
+                    updateSystemUI();
+                    return;
+                }
+            }
+            throw new Error("فشل قراءة حقل المشتركين من الخادم");
         }
     } catch (error) {
-        liveSubsCount = null; // إلغاء أي رقم لمنع التضليل
+        liveSubsCount = null; // ضمان عدم عرض أي رقم خاطئ بناءً على رغبتك
         systemErrorMessage = "خطأ في استدعاء البيانات ⚠️";
         console.error("System Fetch Error: ", error);
     }
@@ -96,35 +102,37 @@ function updateSystemUI() {
 
     // حالة وجود خطأ في جلب البيانات
     if (liveSubsCount === null) {
-        subsDisplay.textContent = systemErrorMessage;
-        currentLevelBox.textContent = "LV. ??";
-        progressFill.style.width = "0%";
-        nextLevelSubs.textContent = "غير متاح بسبب الخطأ";
-        rankBadge.textContent = "الطور: مجهول 🌀";
-        systemWindow.className = "system-window evolution-stage-error";
-        return; // إيقاف التحديث عند هذا الحد لمنع حساب المستويات بشكل خاطئ
+        if (subsDisplay) subsDisplay.textContent = systemErrorMessage;
+        if (currentLevelBox) currentLevelBox.textContent = "LV. ??";
+        if (progressFill) progressFill.style.width = "0%";
+        if (nextLevelSubs) nextLevelSubs.textContent = "غير متاح بسبب الخطأ";
+        if (rankBadge) rankBadge.textContent = "الطور: مجهول 🌀";
+        if (systemWindow) systemWindow.className = "system-window evolution-stage-error";
+        return; 
     }
 
-    // حالة النجاح: حساب المستويات بناءً على الرقم الحي الحقيقي
-    subsDisplay.textContent = liveSubsCount.toLocaleString();
+    // حالة النجاح الفعلي: عرض الرقم الحي وحساب المستويات
+    if (subsDisplay) subsDisplay.textContent = liveSubsCount.toLocaleString();
     
     let currentLvl = 1;
     for (let i = 1; i <= 100; i++) { if (liveSubsCount >= levelRequirements[i]) currentLvl = i; else break; }
-    currentLevelBox.textContent = `LV. ${currentLvl}`;
+    if (currentLevelBox) currentLevelBox.textContent = `LV. ${currentLvl}`;
 
     let currentMin = levelRequirements[currentLvl];
     let nextMax = levelRequirements[currentLvl + 1] || currentMin;
     let percentage = nextMax !== currentMin ? ((liveSubsCount - currentMin) / (nextMax - currentMin)) * 100 : 100;
     
-    progressFill.style.width = `${percentage}%`;
-    nextLevelSubs.textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - liveSubsCount).toLocaleString();
+    if (progressFill) progressFill.style.width = `${percentage}%`;
+    if (nextLevelSubs) nextLevelSubs.textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - liveSubsCount).toLocaleString();
     
-    if (liveSubsCount >= 1000) {
-        systemWindow.className = "system-window evolution-stage-2";
-        rankBadge.textContent = "الطور: الأخضر المستيقظ ⚡";
-    } else {
-        systemWindow.className = "system-window evolution-stage-1";
-        rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
+    if (systemWindow && rankBadge) {
+        if (liveSubsCount >= 1000) {
+            systemWindow.className = "system-window evolution-stage-2";
+            rankBadge.textContent = "الطور: الأخضر المستيقظ ⚡";
+        } else {
+            systemWindow.className = "system-window evolution-stage-1";
+            rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
+        }
     }
 
     // حساب الخانات الفارغة المتبقية للتعليقات
@@ -135,7 +143,7 @@ function updateSystemUI() {
         commentPointsElem.textContent = emptyComments >= 0 ? emptyComments : 0;
     }
 
-    // حساب الخانات الفارغة المتبقية للقنوات حليفة
+    // حساب الخانات الفارغة المتبقية للقنوات الحليفة
     const maxChannels = Math.floor(currentLvl / 5);
     const emptyChannels = maxChannels - MY_CHANNELS.length;
     const channelPointsElem = document.getElementById('channel-points-display');
@@ -149,7 +157,8 @@ function updateSystemUI() {
         if (container) {
             container.innerHTML = "";
             if (MY_COMMENTS.length > 0) {
-                document.getElementById('comment-summon-box').classList.remove('hidden');
+                const summonBox = document.getElementById('comment-summon-box');
+                if (summonBox) summonBox.classList.remove('hidden');
                 const visible = showAllComments ? MY_COMMENTS : MY_COMMENTS.slice(0, 3);
                 visible.forEach(item => {
                     let div = document.createElement('div'); div.className = "single-comment-item";
@@ -157,12 +166,15 @@ function updateSystemUI() {
                     container.appendChild(div);
                 });
                 const btn = document.getElementById('show-more-comments-btn');
-                if (MY_COMMENTS.length > 3) {
-                    btn.classList.remove('hidden');
-                    btn.textContent = showAllComments ? "🔼 إخفاء التعليقات الزائدة" : `🔽 إظهار المزيد (+${MY_COMMENTS.length - 3})`;
-                } else btn.classList.add('hidden');
+                if (btn) {
+                    if (MY_COMMENTS.length > 3) {
+                        btn.classList.remove('hidden');
+                        btn.textContent = showAllComments ? "🔼 إخفاء التعليقات الزائدة" : `🔽 إظهار المزيد (+${MY_COMMENTS.length - 3})`;
+                    } else btn.classList.add('hidden');
+                }
             } else {
-                document.getElementById('comment-summon-box').classList.add('hidden');
+                const summonBox = document.getElementById('comment-summon-box');
+                if (summonBox) summonBox.classList.add('hidden');
             }
         }
     }
@@ -173,7 +185,8 @@ function updateSystemUI() {
         if (container) {
             container.innerHTML = "";
             if (MY_CHANNELS.length > 0) {
-                document.getElementById('alliance-section').classList.remove('hidden');
+                const allianceSection = document.getElementById('alliance-section');
+                if (allianceSection) allianceSection.classList.remove('hidden');
                 const visible = showAllChannels ? MY_CHANNELS : MY_CHANNELS.slice(0, 3);
                 visible.forEach(item => {
                     let div = document.createElement('div'); div.className = "single-alliance-item";
@@ -182,11 +195,16 @@ function updateSystemUI() {
                     container.appendChild(div);
                 });
                 const btn = document.getElementById('show-more-channels-btn');
-                if (MY_CHANNELS.length > 3) {
-                    btn.classList.remove('hidden');
-                    btn.textContent = showAllChannels ? "🔼 إخفاء البوابات" : `🔽 إظهار المزيد (+${MY_CHANNELS.length - 3})`;
-                } else btn.classList.add('hidden');
-            } else document.getElementById('alliance-section').classList.add('hidden');
+                if (btn) {
+                    if (MY_CHANNELS.length > 3) {
+                        btn.classList.remove('hidden');
+                        btn.textContent = showAllChannels ? "🔼 إخفاء البوابات" : `🔽 إظهار المزيد (+${MY_CHANNELS.length - 3})`;
+                    } else btn.classList.add('hidden');
+                }
+            } else {
+                const allianceSection = document.getElementById('alliance-section');
+                if (allianceSection) allianceSection.classList.add('hidden');
+            }
         }
     }
 
@@ -200,8 +218,15 @@ function updateSystemUI() {
     }
 }
 
-document.getElementById('update-btn').addEventListener('click', fetchYouTubeSubs);
-document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; updateSystemUI(); });
-document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; updateSystemUI(); });
+// ربط الأحداث بأزرار الواجهة للتأكد من استدعاء الدوال بشكل صحيح
+const updateBtn = document.getElementById('update-btn');
+if (updateBtn) updateBtn.addEventListener('click', fetchYouTubeSubs);
 
+const showCommentsBtn = document.getElementById('show-more-comments-btn');
+if (showCommentsBtn) showCommentsBtn.addEventListener('click', () => { showAllComments = !showAllComments; updateSystemUI(); });
+
+const showChannelsBtn = document.getElementById('show-more-channels-btn');
+if (showChannelsBtn) showChannelsBtn.addEventListener('click', () => { showAllChannels = !showAllChannels; updateSystemUI(); });
+
+// التشغيل المباشر عند بدء تحميل الواجهة
 window.addEventListener('DOMContentLoaded', fetchYouTubeSubs);

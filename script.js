@@ -1,27 +1,24 @@
-// ==================== 🔑 إعدادات السيرفر السحابي واليوتيوب الجاهزة ====================
-const SUPABASE_URL = "https://bpwyzvdlnyskivqotkrp.supabase.co"; 
-const SUPABASE_KEY = "sb_publishable_kAcNMskOeWtXx4EHDTtZgA_a9onaOOM"; 
+// ==================== لوحة تحكم البيانات الثابتة ====================
 
-const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
-const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
+const MY_COMMENTS = [
+    { username:"@HOUSSAMFRI" , comment_text:"يا للأسف على كل هاد الجهود تروح بدون لايكات استمر❤"  },
+ { username:"@M.zg08" , comment_text:"كل شي ممتاز مع الاستمراريه بتوصل بس حاول تزبط جوده صوتك او غير المايك و اختار قصص ما في احد ملخصها عشان تعطي الناس سبب تتابعك انت بس + حاول تختار مانهوا طويله جدا و تخليها اساسيه ف القناه و تبني جمهورك عليها مثل قناه مقهى الانمي و زوفان + و لا تلتزم ب النص حاول تطلع و تعطي تعليقك في لقطه معينه ف المقطع وترجع تكمل النص مثل الدقيقه 11:6"  },
+ { username:"@Manhwa_factory" , comment_text:"يا للأسف على كل هاد الجهود تروح بدون لايكات استمرعاش ي اسطوره ربنا يوفقق يارب حاول متسرعش الفديو و خليه بصوتك الطبيعي زي باقي الاجزاء كمل الفديو لحد ميبقا مثلا ساعه و اعمل تجميعه حط فيها جميع الاجزاء + جزء جديد علشان تنتشر اسرع و اکثر و بسرعه الحكايه دي في شخص سواها و جاب ف تجميعتها حوالي ۱۹ الف مشاهده ولاكنك لا تساس و کمل اهم حاجه الاستمراريه ."  },
+ { username:"@MahmudMahmad-z6j" , comment_text:"استمر يا بطل وان شاء الله تكون من المشهورين في الدنيا"  },
 
-// ربط النواة بـ Supabase بطريقة آمنة ومضمونة لمنع التجمد
-let supabase = null;
-try {
-    if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } else if (typeof Supabase !== 'undefined') {
-        supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
-} catch (err) {
-    console.error("جدار الحماية السحابي لم يكتمل تحميله بعد:", err);
-}
+];
+
+const MY_CHANNELS = [
+    { channel_name: "قناة لوفي للمحترفين 🏴‍☠️", channel_url: "https://youtube.com" },
+    { channel_name: "بوابة المانهوا العالمية 📖", channel_url: "https://youtube.com" }
+];
+
+const FIXED_SUBS = 303; 
+
+// ===================================================================
 
 let showAllComments = false;
 let showAllChannels = false;
-let currentLevelGlobal = 1;
-let secretClickCount = 0;
-let secretClickTimeout;
 
 const levelRequirements = { 1: 0, 2: 100, 3: 200, 4: 300, 5: 400, 10: 1000, 20: 6000, 30: 10000, 40: 20000, 50: 30000, 60: 50000, 70: 100000, 80: 250000, 90: 500000, 100: 1000000 };
 for (let i = 1; i <= 100; i++) {
@@ -34,52 +31,24 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 جلب البيانات الحية مباشرة من السحابة لجميع الهواتف ====================
-async function fetchYouTubeData() {
-    let currentSubs = 303; 
-    try {
-        const targetUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${API_KEY}`;
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-        const proxyData = await response.json();
-        const data = JSON.parse(proxyData.contents);
-        if (data && data.items && data.items.length > 0) currentSubs = parseInt(data.items[0].statistics.subscriberCount);
-    } catch (e) { console.warn("العداد الاحتياطي نشط."); }
-
-    let dbComments = [];
-    let dbChannels = [];
-
-    if (supabase) {
-        try {
-            const { data: comms } = await supabase.from('channel_comments').select('*').order('created_at', { ascending: true });
-            const { data: chans } = await supabase.from('channel_alliances').select('*').order('created_at', { ascending: true });
-            if (comms) dbComments = comms;
-            if (chans) dbChannels = chans;
-        } catch (err) { console.error("خطأ في جلب بيانات السيرفر:", err); }
-    }
-
-    updateSystem(currentSubs, { commentsList: dbComments, channelsList: dbChannels });
-}
-
-// ==================== 🌌 بناء وتحديث الواجهة لجميع الهواتف بشكل متزامن ====================
-function updateSystem(subs, cloudData) {
-    document.getElementById('subs-display').textContent = subs.toLocaleString();
+function initSystem() {
+    document.getElementById('subs-display').textContent = FIXED_SUBS.toLocaleString();
     
     let currentLvl = 1;
-    for (let i = 1; i <= 100; i++) { if (subs >= levelRequirements[i]) currentLvl = i; else break; }
-    currentLevelGlobal = currentLvl;
+    for (let i = 1; i <= 100; i++) { if (FIXED_SUBS >= levelRequirements[i]) currentLvl = i; else break; }
     document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
 
     let currentMin = levelRequirements[currentLvl];
     let nextMax = levelRequirements[currentLvl + 1] || currentMin;
-    let percentage = nextMax !== currentMin ? ((subs - currentMin) / (nextMax - currentMin)) * 100 : 100;
+    let percentage = nextMax !== currentMin ? ((FIXED_SUBS - currentMin) / (nextMax - currentMin)) * 100 : 100;
     
     document.getElementById('progress-fill').style.width = `${percentage}%`;
-    document.getElementById('next-level-subs').textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - subs).toLocaleString();
+    document.getElementById('next-level-subs').textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - FIXED_SUBS).toLocaleString();
 
     const systemWindow = document.getElementById('system-window');
     const rankBadge = document.getElementById('rank-badge');
     
-    if (subs >= 1000) {
+    if (FIXED_SUBS >= 1000) {
         systemWindow.className = "system-window evolution-stage-2";
         rankBadge.textContent = "الطور: الأخضر المستيقظ ⚡";
     } else {
@@ -87,167 +56,79 @@ function updateSystem(subs, cloudData) {
         rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
     }
 
-    document.getElementById('comment-points-display').textContent = `${cloudData.commentsList.length} / ${currentLvl}`;
-    document.getElementById('channel-points-display').textContent = `${cloudData.channelsList.length} / ${Math.floor(currentLvl / 5)}`;
+    // حساب وعرض عدد الخانات الفارغة المتبقية فوق القوائم مباشرة
+    const maxComments = currentLvl; 
+    const emptyComments = maxComments - MY_COMMENTS.length;
+    const commentPointsElem = document.getElementById('comment-points-display');
+    if (commentPointsElem) {
+        commentPointsElem.textContent = emptyComments >= 0 ? emptyComments : 0;
+    }
 
-    const isAdmin = sessionStorage.getItem('systemAdminActive') === "true";
+    const maxChannels = Math.floor(currentLvl / 5);
+    const emptyChannels = maxChannels - MY_CHANNELS.length;
+    const channelPointsElem = document.getElementById('channel-points-display');
+    if (channelPointsElem) {
+        channelPointsElem.textContent = emptyChannels >= 0 ? emptyChannels : 0;
+    }
 
-    // عرض قسم التعليقات لجميع الناس
+    // مهارة استدعاء تعليقات الأوفياء
     if (currentLvl >= 2) {
         const container = document.getElementById('comments-container');
-        container.innerHTML = "";
-        if (cloudData.commentsList.length > 0) {
-            document.getElementById('comment-summon-box').classList.remove('hidden');
-            const visible = showAllComments ? cloudData.commentsList : cloudData.commentsList.slice(0, 3);
-            visible.forEach(item => {
-                let div = document.createElement('div'); div.className = "single-comment-item";
-                div.innerHTML = `<p class="comment-user">${item.username}</p><p class="comment-text">"${item.comment_text}"</p>`;
-                container.appendChild(div);
-            });
-            const btn = document.getElementById('show-more-comments-btn');
-            if (cloudData.commentsList.length > 3) {
-                btn.classList.remove('hidden');
-                btn.textContent = showAllComments ? "🔼 إخفاء التعليقات الزائدة" : `🔽 إظهار المزيد (+${cloudData.commentsList.length - 3})`;
-            } else btn.classList.add('hidden');
-        } else {
-            document.getElementById('comment-summon-box').classList.add('hidden');
+        if (container) {
+            container.innerHTML = "";
+            if (MY_COMMENTS.length > 0) {
+                document.getElementById('comment-summon-box').classList.remove('hidden');
+                const visible = showAllComments ? MY_COMMENTS : MY_COMMENTS.slice(0, 3);
+                visible.forEach(item => {
+                    let div = document.createElement('div'); div.className = "single-comment-item";
+                    div.innerHTML = `<p class="comment-user">${item.username}</p><p class="comment-text">"${item.comment_text}"</p>`;
+                    container.appendChild(div);
+                });
+                const btn = document.getElementById('show-more-comments-btn');
+                if (MY_COMMENTS.length > 3) {
+                    btn.classList.remove('hidden');
+                    btn.textContent = showAllComments ? "🔼 إخفاء التعليقات الزائدة" : `🔽 إظهار المزيد (+${MY_COMMENTS.length - 3})`;
+                } else btn.classList.add('hidden');
+            } else {
+                document.getElementById('comment-summon-box').classList.add('hidden');
+            }
         }
-        if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
-    // عرض قسم البوابات لجميع الناس
+    // مهارة بوابات الدعم للقنوات الحليفة
     if (currentLvl >= 5) {
         const container = document.getElementById('alliance-container');
-        container.innerHTML = "";
-        if (cloudData.channelsList.length > 0) {
-            document.getElementById('alliance-section').classList.remove('hidden');
-            const visible = showAllChannels ? cloudData.channelsList : cloudData.channelsList.slice(0, 3);
-            visible.forEach(item => {
-                let div = document.createElement('div'); div.className = "single-alliance-item";
-                div.innerHTML = `<p style="margin:0; font-size:13px;">دعم لـ: <strong>${item.channel_name}</strong></p>
-                                 <a href="${item.channel_url}" target="_blank" class="alliance-link">⚔️ دخول بوابة الدعم</a>`;
-                container.appendChild(div);
-            });
-            const btn = document.getElementById('show-more-channels-btn');
-            if (cloudData.channelsList.length > 3) {
-                btn.classList.remove('hidden');
-                btn.textContent = showAllChannels ? "🔼 إخفاء البوابات" : `🔽 إظهار المزيد (+${cloudData.channelsList.length - 3})`;
-            } else btn.classList.add('hidden');
-        } else document.getElementById('alliance-section').classList.add('hidden');
-        if(isAdmin) document.getElementById('admin-channel-inputs').classList.remove('hidden');
-    }
-
-    // طباعة الميزات وقوائم الحذف المنفصلة للمسؤول
-    const adminPanel = document.getElementById('admin-panel');
-    if (isAdmin) {
-        adminPanel.classList.remove('hidden');
-        
-        const commManage = document.getElementById('admin-comments-manage-list');
-        commManage.innerHTML = "";
-        cloudData.commentsList.forEach(c => {
-            let row = document.createElement('div'); row.className = "item-manage-row";
-            row.innerHTML = `<span class="item-manage-text">👤 ${c.username}</span>
-                             <button class="inline-delete-btn" onclick="apiDeleteComment(${c.id})">حذف فوري ❌</button>`;
-            commManage.appendChild(row);
-        });
-
-        const chanManage = document.getElementById('admin-channels-manage-list');
-        chanManage.innerHTML = "";
-        cloudData.channelsList.forEach(ch => {
-            let row = document.createElement('div'); row.className = "item-manage-row";
-            row.innerHTML = `<span class="item-manage-text">📢 ${ch.channel_name}</span>
-                             <button class="inline-delete-btn" onclick="apiDeleteChannel(${ch.id})">حذف فوري ❌</button>`;
-            chanManage.appendChild(row);
-        });
-
-        if (!document.getElementById('logout-admin-btn')) {
-            const logout = document.createElement('button');
-            logout.id = "logout-admin-btn"; logout.innerHTML = "🔒 الخروج من وضع المسؤول";
-            logout.style = "background:#220505; color:#ff3333; border:1px dashed #ff3333; padding:7px; width:100%; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px; margin-bottom:15px;";
-            logout.onclick = () => { sessionStorage.removeItem('systemAdminActive'); fetchYouTubeData(); };
-            adminPanel.insertBefore(logout, adminPanel.children[1]);
+        if (container) {
+            container.innerHTML = "";
+            if (MY_CHANNELS.length > 0) {
+                document.getElementById('alliance-section').classList.remove('hidden');
+                const visible = showAllChannels ? MY_CHANNELS : MY_CHANNELS.slice(0, 3);
+                visible.forEach(item => {
+                    let div = document.createElement('div'); div.className = "single-alliance-item";
+                    div.innerHTML = `<p style="margin:0; font-size:13px;">دعم لـ: <strong>${item.channel_name}</strong></p>
+                                     <a href="${item.channel_url}" target="_blank" class="alliance-link">⚔️ دخول بوابة الدعم</a>`;
+                    container.appendChild(div);
+                });
+                const btn = document.getElementById('show-more-channels-btn');
+                if (MY_CHANNELS.length > 3) {
+                    btn.classList.remove('hidden');
+                    btn.textContent = showAllChannels ? "🔼 إخفاء البوابات" : `🔽 إظهار المزيد (+${MY_CHANNELS.length - 3})`;
+                } else btn.classList.add('hidden');
+            } else document.getElementById('alliance-section').classList.add('hidden');
         }
-    } else { adminPanel.classList.add('hidden'); }
+    }
 
     const skillsList = document.getElementById('skills-list');
-    skillsList.innerHTML = "";
-    let skills = ["🔓 ميزة رصد المشتركين تلقائياً الحية"];
-    if (currentLvl >= 2) skills.push("💬 مهارة نشطة: [استدعاء تعليق حليف أوفى]");
-    if (currentLvl >= 5) skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
-    skills.forEach(s => { let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li); });
-}
-
-// ==================== 🛠️ أوامر التحكم الحية بالسحابة وبث التحديث لكل الأجهزة ====================
-document.getElementById('save-comment-btn').addEventListener('click', async () => {
-    const name = document.getElementById('input-fan-name').value.trim();
-    const text = document.getElementById('input-fan-text').value.trim();
-    if(!name || !text) return alert("املاً الحقول أولاً!");
-
-    if(supabase) {
-        await supabase.from('channel_comments').insert([{ username: name, comment_text: text }]);
-        document.getElementById('input-fan-name').value = ""; document.getElementById('input-fan-text').value = "";
-        alert("⚡ تم بث وتعليق الصوت الأسطوري لجميع الهواتف!");
-        fetchYouTubeData();
-    }
-});
-
-document.getElementById('save-channel-btn').addEventListener('click', async () => {
-    const name = document.getElementById('input-channel-name').value.trim();
-    const url = document.getElementById('input-channel-url').value.trim();
-    if(!name || !url) return alert("املاً الحقول أولاً!");
-
-    if(supabase) {
-        await supabase.from('channel_alliances').insert([{ channel_name: name, channel_url: url }]);
-        document.getElementById('input-channel-name').value = ""; document.getElementById('input-channel-url').value = "";
-        alert("🔥 تم فتح البوابة وبثها لجميع الهواتف!");
-        fetchYouTubeData();
-    }
-});
-
-// تصفير وتنظيف القوائم بالكامل عند الضغط على أزرار الحذف الكبيرة
-document.getElementById('delete-comment-btn').addEventListener('click', async () => {
-    if(confirm("هل أنت متأكد من مسح وتصفير قائمة التعليقات بالكامل من السيرفر؟")) {
-        if(supabase) {
-            await supabase.from('channel_comments').delete().neq('id', 0);
-            fetchYouTubeData();
-        }
-    }
-});
-
-document.getElementById('delete-channel-btn').addEventListener('click', async () => {
-    if(confirm("هل أنت متأكد من إغلاق وتصفير جميع بوابات الدعم من السيرفر؟")) {
-        if(supabase) {
-            await supabase.from('channel_alliances').delete().neq('id', 0);
-            fetchYouTubeData();
-        }
-    }
-});
-
-window.apiDeleteComment = function(id) {
-    if(confirm("حذف هذا التعليق نهائياً من كل الأبعاد؟")) {
-        if(supabase) supabase.from('channel_comments').delete().eq('id', id).then(() => fetchYouTubeData());
+    if (skillsList) {
+        skillsList.innerHTML = "";
+        let skills = ["🔓 ميزة رصد المشتركين تلقائياً"];
+        if (currentLvl >= 2) skills.push("💬 مهارة نشطة: [استدعاء تعليق حليف أوفى]");
+        if (currentLvl >= 5) skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
+        skills.forEach(s => { let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li); });
     }
 }
 
-window.apiDeleteChannel = function(id) {
-    if(confirm("إغلاق وحذف هذه البوابة نهائياً عند الجميع؟")) {
-        if(supabase) supabase.from('channel_alliances').delete().eq('id', id).then(() => fetchYouTubeData());
-    }
-}
-
-// بروتوكول فتح بوابات التحكم السرية للمؤسس (5 ضغطات على زر التحديث)
-document.getElementById('update-btn').addEventListener('click', () => {
-    secretClickCount++;
-    if (secretClickCount === 1) { clearTimeout(secretClickTimeout); secretClickTimeout = setTimeout(() => { secretClickCount = 0; }, 3000); }
-    if (secretClickCount === 5) {
-        secretClickCount = 0;
-        const key = prompt("الرجاء إدخل تعويذة السيطرة لعاهل السيستم:");
-        if (key === "sensei2026") { sessionStorage.setItem('systemAdminActive', "true"); fetchYouTubeData(); }
-        return;
-    }
-    fetchYouTubeData();
-});
-
-document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; fetchYouTubeData(); });
-document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; fetchYouTubeData(); });
-window.addEventListener('DOMContentLoaded', fetchYouTubeData);
+document.getElementById('update-btn').addEventListener('click', initSystem);
+document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; initSystem(); });
+document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; initSystem(); });
+window.addEventListener('DOMContentLoaded', initSystem);

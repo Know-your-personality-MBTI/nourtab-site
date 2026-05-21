@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام ارتقاء مستوى القناة - واجهة السيطرة المطلقة</title>
+    <title>نظام ارتقاء مستوى القناة</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="system-window" class="system-window evolution-stage-1">
-        <h2 id="system-title">واجهة نظام ارتقاء مستوى القناة</h2>
+        <h2>واجهة نظام ارتقاء مستوى القناة</h2>
         
         <hr class="system-divider">
 
@@ -38,52 +38,16 @@
 
         <div id="comment-summon-box" class="comment-section-box hidden">
             <h3>💬 مهارة [استدعاء صوت الأوفياء]:</h3>
+            <div style="font-size: 13px; color: #ffd700; margin-bottom: 8px;">الخانات الفارغة المتبقية: <span id="comment-points-display" style="font-weight: bold;">0</span></div>
             <div id="comments-container"></div>
             <button id="show-more-comments-btn" class="show-more-btn hidden">🔽 إظهار المزيد من التعليقات</button>
         </div>
 
         <div id="alliance-section" class="alliance-box hidden">
             <h3>🤝 بوابات الدعم: القنوات الحليفة المستيقظة</h3>
+            <div style="font-size: 13px; color: #ffd700; margin-bottom: 8px;">الخانات الفارغة المتبقية: <span id="channel-points-display" style="font-weight: bold;">0</span></div>
             <div id="alliance-container"></div>
             <button id="show-more-channels-btn" class="show-more-btn hidden">🔽 إظهار المزيد من البوابات</button>
-        </div>
-
-        <div id="admin-panel" class="admin-panel hidden">
-            <h3 class="admin-title">👑 لوحة تحكم عاهل السيستم (مؤمنة بالكامل)</h3>
-            
-            <div id="admin-comment-inputs" class="admin-group hidden">
-                <h4 style="color: #ffd700; margin: 0 0 5px 0; font-size: 13px;">⚙️ إدارة تعليقات الأوفياء:</h4>
-                <div class="points-tracker">نقاط استدعاء التعليقات المتاحة: <span id="comment-points-display" class="points-num">0/0</span></div>
-                
-                <div id="admin-comments-manage-list" style="margin-bottom: 12px;"></div>
-
-                <label>👤 اسم المشترك المستدعى:</label>
-                <input type="text" id="input-fan-name" placeholder="مثال: عبدالرحمن _ مانهوا">
-                <label>📝 نص التعليق الأسطوري:</label>
-                <textarea id="input-fan-text" placeholder="اكتب تعليقه هنا..."></textarea>
-                
-                <div class="admin-actions-grid">
-                    <button id="save-comment-btn" class="admin-sub-btn">🔮 استدعاء ودمج التعليق</button>
-                    <button id="delete-comment-btn" class="admin-delete-btn">🗑️ تطهير وتصفير القائمة بالكامل</button>
-                </div>
-            </div>
-
-            <div id="admin-channel-inputs" class="admin-group hidden">
-                <h4 style="color: #ffd700; margin: 0 0 5px 0; font-size: 13px;">⚙️ إدارة بوابات الدعم:</h4>
-                <div class="points-tracker">نقاط فتح بوابات الدعم المتاحة: <span id="channel-points-display" class="points-num">0/0</span></div>
-                
-                <div id="admin-channels-manage-list" style="margin-bottom: 12px;"></div>
-
-                <label>📢 اسم قناة المتابع المدعوم:</label>
-                <input type="text" id="input-channel-name" placeholder="مثال: قناة ساسكي للمحترفين">
-                <label>🔗 رابط القناة الأصلي:</label>
-                <input type="url" id="input-channel-url" placeholder="https://youtube.com/@...">
-                
-                <div class="admin-actions-grid">
-                    <button id="save-channel-btn" class="admin-sub-btn">🔥 فتح ودمج بوابة الدعم</button>
-                    <button id="delete-channel-btn" class="admin-delete-btn">🗑️ إغلاق وتصفير جميع البوابات</button>
-                </div>
-            </div>
         </div>
 
         <div class="control-panel">
@@ -91,7 +55,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>

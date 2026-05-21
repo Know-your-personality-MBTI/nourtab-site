@@ -30,7 +30,6 @@ body {
 .show-more-btn { background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(0, 210, 255, 0.3); color: #00d2ff; width: 100%; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 5px; font-weight: bold; }
 .show-more-btn:hover { background: rgba(0, 210, 255, 0.1); }
 
-/* العدادات المؤطرة الجديدة في لوحة التحكم */
 .points-tracker { background: rgba(0, 255, 102, 0.1); border: 1px solid rgba(0, 255, 102, 0.3); padding: 5px 10px; border-radius: 4px; font-size: 12px; color: #00ff66; margin-bottom: 10px; text-align: center; font-weight: bold; }
 .points-num { color: #ffffff; background: #00994d; padding: 1px 6px; border-radius: 3px; margin-right: 5px; }
 
@@ -45,6 +44,15 @@ body {
 .admin-sub-btn:hover { background: #00cc66; }
 .admin-delete-btn { background: #cc2900; color: white; border: none; padding: 8px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
 .admin-delete-btn:hover { background: #ff3300; }
+
+/* أسطر التحكم الفردية المضافة حديثاً لحذف كل عنصر لوحده */
+.item-manage-row {
+    display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05);
+    padding: 6px 10px; border-radius: 4px; margin-bottom: 5px; border: 1px solid rgba(255, 51, 51, 0.2);
+}
+.item-manage-text { font-size: 11px; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+.inline-delete-btn { background: #441111; color: #ff6666; border: 1px solid #ff3333; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
+.inline-delete-btn:hover { background: #ff3333; color: #fff; }
 
 .system-btn { background: linear-gradient(135deg, #0b1a30, #005580); border: 1px solid #00d2ff; color: white; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
 .system-btn:hover { background: #00d2ff; color: #050911; box-shadow: 0 0 15px #00d2ff; }

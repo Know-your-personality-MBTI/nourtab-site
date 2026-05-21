@@ -29,7 +29,6 @@ for (let i = 1; i <= 100; i++) {
 
 // ==================== 📡 محرك المزامنة السحابي الآمن لمنع تعطل السيستم ====================
 async function fetchCloudData() {
-    // محاكاة FETCH حقيقي من مستودع السيستم الآمن والمحمي ضد الـ Race Condition
     let localData = localStorage.getItem('sensei_system_core');
     if (!localData) {
         const initialCore = { commentsList: [], channelsList: [] };
@@ -43,7 +42,6 @@ async function saveToCloud(updatedFields) {
     try {
         let currentCloudData = await fetchCloudData();
         
-        // دمج البيانات الجديدة بشكل صارم ومتتالي
         const finalData = {
             commentsList: updatedFields.commentsList !== undefined ? updatedFields.commentsList : (currentCloudData.commentsList || []),
             channelsList: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
@@ -59,7 +57,7 @@ async function saveToCloud(updatedFields) {
 
 // ==================== 📡 جلب إحصائيات اليوتيوب وتحديث الواجهة ====================
 async function fetchYouTubeData() {
-    let currentSubs = 303; // العداد الافتراضي الحالي لقناتك (ليفل 4)
+    let currentSubs = 303; 
     
     try {
         const targetUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${API_KEY}`;
@@ -82,7 +80,6 @@ async function fetchYouTubeData() {
 function updateSystem(subs, cloudData) {
     document.getElementById('subs-display').textContent = subs.toLocaleString();
     
-    // 📌 حساب المستوى الحالي بناءً على المشتركين
     let currentLvl = 1;
     for (let i = 1; i <= 100; i++) {
         if (subs >= levelRequirements[i]) currentLvl = i; else break;
@@ -90,7 +87,6 @@ function updateSystem(subs, cloudData) {
     currentLevelGlobal = currentLvl; 
     document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
 
-    // حساب النسبة المئوية للمسافة برمجياً لملء شريط التقدم
     let currentMin = levelRequirements[currentLvl];
     let nextMax = levelRequirements[currentLvl + 1] || currentMin;
     let percentage = nextMax !== currentMin ? ((subs - currentMin) / (nextMax - currentMin)) * 100 : 100;
@@ -98,7 +94,6 @@ function updateSystem(subs, cloudData) {
     document.getElementById('progress-fill').style.width = `${percentage}%`;
     document.getElementById('next-level-subs').textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - subs).toLocaleString();
 
-    // ⚡ أمر الطور المتطور الحركي (عند الـ 1,000 مشترك تماماً أي ليفل 10 فما فوق)
     const systemWindow = document.getElementById('system-window');
     const rankBadge = document.getElementById('rank-badge');
     
@@ -110,24 +105,21 @@ function updateSystem(subs, cloudData) {
         rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
     }
 
-    // 📊 حساب سعة قيود جدار الطاقة الصارم بناءً على التعديل الجديد لقواعد الليفل
-    const maxCommentPoints = currentLvl; // نقاط التعليقات تزداد بزيادة مستوى القناة تماماً
+    const maxCommentPoints = currentLvl; 
     currentCommentCountGlobal = (cloudData.commentsList || []).length;
     document.getElementById('comment-points-display').textContent = `${currentCommentCountGlobal} / ${maxCommentPoints}`;
 
-    // 📌 الحساب الجديد للبوابات: بوابة واحدة لكل 5 ليفلات (أقل من ليفل 5 يعطي 0 تلقائياً)
     let maxChannelPoints = Math.floor(currentLvl / 5);
     currentChannelCountGlobal = (cloudData.channelsList || []).length;
     document.getElementById('channel-points-display').textContent = `${currentChannelCountGlobal} / ${maxChannelPoints}`;
 
-    // تشكيل مهارات السيستم النشطة
     const skillsList = document.getElementById('skills-list');
     skillsList.innerHTML = "";
     let skills = ["🔓 ميزة رصد المشتركين تلقائياً الحية"];
 
     const isAdmin = sessionStorage.getItem('systemAdminActive') === "true";
     
-    // 🔮 1. عرض مهارة استدعاء تعليقات الأوفياء (تفتح من ليفل 2 فما فوق)
+    // 🔮 1. مهارة استدعاء تعليقات الأوفياء
     if (currentLvl >= 2) {
         skills.push("💬 مهارة نشطة: [استدعاء تعليق حليف أوفى]");
         const container = document.getElementById('comments-container');
@@ -161,7 +153,7 @@ function updateSystem(subs, cloudData) {
         if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
-    // 🤝 2. عرض مهارة بوابات دعم القنوات الحليفة (تفتح فقط عند ليفل 5 أو أعلى)
+    // 🤝 2. مهارة بوابات دعم القنوات الحليفة
     if (currentLvl >= 5) { 
         skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
         const container = document.getElementById('alliance-container');
@@ -195,19 +187,44 @@ function updateSystem(subs, cloudData) {
 
         if(isAdmin) document.getElementById('admin-channel-inputs').classList.remove('hidden');
     } else {
-        // حجب قسم البوابات تماماً إذا كان المستوى أقل من 5
         document.getElementById('alliance-section').classList.add('hidden');
         if(isAdmin) document.getElementById('admin-channel-inputs').classList.add('hidden');
     }
 
-    // حقن المهارات في القائمة
     skills.forEach(s => {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    // التحكم في ظهور اللوحة كاملة
-    if (isAdmin) { document.getElementById('admin-panel').classList.remove('hidden'); } 
-    else { document.getElementById('admin-panel').classList.add('hidden'); }
+    // 👑 تدبير وإدارة لوحة عاهل السيستم برمجياً مع إضافة زر الخروج السريع
+    const adminPanel = document.getElementById('admin-panel');
+    if (isAdmin) { 
+        adminPanel.classList.remove('hidden');
+        
+        // إذا لم يكن زر تسجيل الخروج موجوداً، نقوم بحقنه برمجياً في أعلى اللوحة
+        if (!document.getElementById('logout-admin-btn')) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = "logout-admin-btn";
+            logoutBtn.innerHTML = "🔒 قفل وبث حماية السيستم (الخروج من وضع المسؤول)";
+            logoutBtn.style = "background: #220505; color: #ff3333; border: 1px dashed #ff3333; padding: 7px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; margin-bottom: 15px;";
+            
+            // إضافة حدث الضغط للقفل المباشر عند النقر عليه
+            logoutBtn.addEventListener('click', () => {
+                if (confirm("هل أنت متأكد من تفعيل بروتوكول القفل الفوري وحجب لوحة عاهل السيستم؟")) {
+                    sessionStorage.removeItem('systemAdminActive'); 
+                    alert("🔒 تم قفل بوابات السيطرة وتطهير صلاحية الجلسة!");
+                    fetchYouTubeData(); 
+                }
+            });
+            
+            // وضعه في بداية لوحة الأدمن بعد العنوان مباشرة
+            adminPanel.insertBefore(logoutBtn, adminPanel.children[1]);
+        }
+    } else { 
+        adminPanel.classList.add('hidden'); 
+        // تنظيف الزر إذا حُجبت اللوحة
+        const oldBtn = document.getElementById('logout-admin-btn');
+        if(oldBtn) oldBtn.remove();
+    }
 }
 
 // 🔮 أمر استدعاء تعليق الأوفياء الصارم
@@ -220,17 +237,14 @@ document.getElementById('save-comment-btn').addEventListener('click', async () =
         return; 
     }
 
-    // 1️⃣ طلب جلب (FETCH) فوري مباشر من السيرفر
     let currentCloudData = await fetchCloudData();
     const currentComments = currentCloudData.commentsList || [];
 
-    // 2️⃣ التحقق من قيود جدار الطاقة الصارم بناءً على ليفل القناة الحالي
     if (currentComments.length >= currentLevelGlobal) {
         alert(`❌ طاقة لفل القناة ممتلئة! الحد الأقصى لمستواك الحالي هو ${currentLevelGlobal} تعليقات فقط.`);
         return;
     }
 
-    // 3️⃣ حقن وحفظ (POST)
     currentComments.push({ user: name, text: text });
     document.getElementById('input-fan-name').value = "";
     document.getElementById('input-fan-text').value = "";
@@ -248,20 +262,16 @@ document.getElementById('save-channel-btn').addEventListener('click', async () =
         return; 
     }
 
-    // 1️⃣ طلب جلب (FETCH) فوري مباشر
     let currentCloudData = await fetchCloudData();
     const currentChannels = currentCloudData.channelsList || [];
     
-    // حساب الحد الأقصى للبوابات (بوابة لكل 5 ليفلات)
     let maxChannelPoints = Math.floor(currentLevelGlobal / 5);
 
-    // 2️⃣ جدار التحقق الصارم من النقاط
     if (currentChannels.length >= maxChannelPoints) {
-        alert(`❌ طاقة النظام لا تسمح بفتح بوابة دعم جديدة! حدك الأقصى الحالي هو ${maxChannelPoints} بوابات (تفتح بوابة كل 5 مستويات).`);
+        alert(`❌ طاقة النظام لا تسمح بفتح بوابة دعم جديدة! حدك الأقصى الحالي هو ${maxChannelPoints} بوابات.`);
         return;
     }
 
-    // 3️⃣ حقن وحفظ
     currentChannels.push({ name: name, url: url });
     document.getElementById('input-channel-name').value = "";
     document.getElementById('input-channel-url').value = "";
@@ -282,7 +292,6 @@ document.getElementById('delete-channel-btn').addEventListener('click', () => {
     }
 });
 
-// 🔽 تفعيل وظائف أزرار "إظهار المزيد"
 document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; fetchYouTubeData(); });
 document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; fetchYouTubeData(); });
 
@@ -299,7 +308,6 @@ updateBtn.addEventListener('click', () => {
         }, 3000);
     }
 
-    // 🛑 عند الضغط 5 ضغطات متتالية وسريعة خلال 3 ثوانٍ فقط
     if (secretClickCount === 5) {
         clearTimeout(secretClickTimeout);
         secretClickCount = 0; 
@@ -318,7 +326,6 @@ updateBtn.addEventListener('click', () => {
     fetchYouTubeData();
 });
 
-// تنظيف التوقيعات القديمة عند بدء تحميل الصفحة لضمان القفل المطلق للوحة التحكم للزوار
 window.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('systemAdminSignature');
     fetchYouTubeData();

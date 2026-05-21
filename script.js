@@ -2,22 +2,27 @@
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// 💬 قاعدة البيانات الداخلية المدمجة (تظهر تلقائياً في كل الهواتف فوراً)
-const GLOBAL_DATABASE = {
+// 💬 قاعدة البيانات الداخلية المدمجة الآمنة (عدلها من هنا أو أضف من لوحة المسؤول)
+let GLOBAL_DATABASE = {
     commentsList: [
         { user: "HOUSSAMFRI@", text: "يا للأسف على كل هاد الجهود تروح بدون لايكات استمر❤" },
         { user: "عبدالرحمن _ مانهوا", text: "أفضل سيستم لدعم وتطوير القنوات الأسطورية!" }
     ],
-    channelsList: [
-        // يمكنك تركها فارغة أو إضافة قنوات هنا مستقبلاً
-    ]
+    channelsList: []
 };
 
 // حالات التحكم في ميزة "إظهار المزيد"
 let showAllComments = false;
 let showAllChannels = false;
 
-// ومتطلبات الـ 100 لفل المنهجية الصارمة
+// متغيرات تتبع النقاط عالمياً
+let currentLevelGlobal = 1;
+
+// عداد حماية البوابة السرية (5 ضغطات / 3 ثوانٍ)
+let secretClickCount = 0;
+let secretClickTimeout;
+
+// متطلبات الـ 100 لفل المنهجية الصارمة
 const levelRequirements = { 1: 0, 2: 100, 3: 200, 4: 300, 5: 400, 10: 1000, 20: 6000, 30: 10000, 40: 20000, 50: 30000, 60: 50000, 70: 100000, 80: 250000, 90: 500000, 100: 1000000 };
 for (let i = 1; i <= 100; i++) {
     if (levelRequirements[i] === undefined) {
@@ -29,18 +34,16 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 محرك تشغيل البيانات الداخلي الآمن ====================
+// ==================== 📡 محرك تشغيل البيانات الداخلي والآمن ====================
 function fetchCloudData() {
-    // جلب البيانات من الذاكرة الداخلية المدمجة لضمان المزامنة الفورية دون أخطاء سيرفر
     return GLOBAL_DATABASE;
 }
 
 function saveToCloud(updatedFields) {
-    // حفظ محلي احتياطي للمتصفح الحالي لمنع رسائل الخطأ تماماً
     if (updatedFields.commentsList !== undefined) GLOBAL_DATABASE.commentsList = updatedFields.commentsList;
     if (updatedFields.channelsList !== undefined) GLOBAL_DATABASE.channelsList = updatedFields.channelsList;
     
-    alert("⚡ تم تحديث بيانات السيستم الداخلية بنجاح تفادياً لأخطاء الشبكة!");
+    alert("⚡ تم الحفظ والدمج داخل نواة السيستم بنجاح تام!");
     fetchYouTubeData();
 }
 
@@ -73,7 +76,7 @@ function updateSystem(subs, cloudData) {
     for (let i = 1; i <= 100; i++) {
         if (subs >= levelRequirements[i]) currentLvl = i; else break;
     }
-    
+    currentLevelGlobal = currentLvl;
     document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
 
     let currentMin = levelRequirements[currentLvl];
@@ -137,6 +140,8 @@ function updateSystem(subs, cloudData) {
             } else { document.getElementById('comment-summon-box').classList.add('hidden'); }
             document.getElementById('show-more-comments-btn').classList.add('hidden');
         }
+
+        if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
     if (currentLvl >= 5) { 
@@ -169,23 +174,136 @@ function updateSystem(subs, cloudData) {
             } else { document.getElementById('alliance-section').classList.add('hidden'); }
             document.getElementById('show-more-channels-btn').classList.add('hidden');
         }
+
+        if(isAdmin) document.getElementById('admin-channel-inputs').classList.remove('hidden');
     } else {
         document.getElementById('alliance-section').classList.add('hidden');
+        if(isAdmin) document.getElementById('admin-channel-inputs').classList.add('hidden');
     }
 
     skills.forEach(s => {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    // إخفاء لوحة الأدمن لتجنب تعارض السيرفرات السحابية المحظورة
-    document.getElementById('admin-panel').classList.add('hidden');
+    // 🔓 تفعيل ظهور لوحة الإدارة عند نجاح التعويذة السرية
+    const adminPanel = document.getElementById('admin-panel');
+    if (isAdmin) { 
+        adminPanel.classList.remove('hidden');
+        
+        if (!document.getElementById('logout-admin-btn')) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = "logout-admin-btn";
+            logoutBtn.innerHTML = "🔒 قفل وبث حماية السيستم (الخروج من وضع المسؤول)";
+            logoutBtn.style = "background: #220505; color: #ff3333; border: 1px dashed #ff3333; padding: 7px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; margin-bottom: 15px;";
+            
+            logoutBtn.addEventListener('click', () => {
+                if (confirm("هل أنت متأكد من تفعيل بروتوكول القفل الفوري وحجب لوحة عاهل السيستم؟")) {
+                    sessionStorage.removeItem('systemAdminActive'); 
+                    alert("🔒 تم قفل بوابات السيطرة وتطهير صلاحية الجلسة!");
+                    fetchYouTubeData(); 
+                }
+            });
+            adminPanel.insertBefore(logoutBtn, adminPanel.children[1]);
+        }
+    } else { 
+        adminPanel.classList.add('hidden'); 
+        const oldBtn = document.getElementById('logout-admin-btn');
+        if(oldBtn) oldBtn.remove();
+    }
 }
+
+// 🔮 أمر إضافة تعليق الأوفياء الداخلي الآمن
+document.getElementById('save-comment-btn').addEventListener('click', async () => {
+    const name = document.getElementById('input-fan-name').value.trim();
+    const text = document.getElementById('input-fan-text').value.trim();
+    
+    if(!name || !text) { 
+        alert("الرجاء إدخال اسم المشترك ونص التعليق أولاً!"); 
+        return; 
+    }
+
+    let currentCloudData = fetchCloudData();
+    const currentComments = currentCloudData.commentsList || [];
+
+    if (currentComments.length >= currentLevelGlobal) {
+        alert(`❌ طاقة لفل القناة ممتلئة! الحد الأقصى لمستواك الحالي هو ${currentLevelGlobal} تعليقات فقط.`);
+        return;
+    }
+
+    currentComments.push({ user: name, text: text });
+    document.getElementById('input-fan-name').value = "";
+    document.getElementById('input-fan-text').value = "";
+    
+    saveToCloud({ commentsList: currentComments });
+});
+
+// 🔥 أمر فتح بوابة دعم القنوات
+document.getElementById('save-channel-btn').addEventListener('click', async () => {
+    const name = document.getElementById('input-channel-name').value.trim();
+    const url = document.getElementById('input-channel-url').value.trim();
+    
+    if(!name || !url) { 
+        alert("الرجاء إإدخال اسم القناة الحليفة ورابطها!"); 
+        return; 
+    }
+
+    let currentCloudData = fetchCloudData();
+    const currentChannels = currentCloudData.channelsList || [];
+    
+    let maxChannelPoints = Math.floor(currentLevelGlobal / 5);
+
+    if (currentChannels.length >= maxChannelPoints) {
+        alert(`❌ طاقة النظام لا تسمح بفتح بوابة دعم جديدة! حدك الأقصى الحالي هو ${maxChannelPoints} بوابات.`);
+        return;
+    }
+
+    currentChannels.push({ name: name, url: url });
+    document.getElementById('input-channel-name').value = "";
+    document.getElementById('input-channel-url').value = "";
+    
+    saveToCloud({ channelsList: currentChannels });
+});
+
+// 🗑️ أزرار التطهير وتصفير المصفوفات
+document.getElementById('delete-comment-btn').addEventListener('click', () => {
+    if(confirm("هل أنت متأكد من مسح وتطهير قائمة التعليقات؟")) {
+        saveToCloud({ commentsList: [] });
+    }
+});
+
+document.getElementById('delete-channel-btn').addEventListener('click', () => {
+    if(confirm("هل أنت متأكد من إغلاق كافة بوابات الدعم الحالية؟")) {
+        saveToCloud({ channelsList: [] });
+    }
+});
 
 document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; fetchYouTubeData(); });
 document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; fetchYouTubeData(); });
 
-// زر التحديث العادي الآمن لعداد المشتركين واللفل فقط
-document.getElementById('update-btn').addEventListener('click', () => {
+// ==================== 🛡️ بروتوكول حماية البوابة السرية (التحول للمؤسس) ====================
+const updateBtn = document.getElementById('update-btn');
+updateBtn.addEventListener('click', () => {
+    secretClickCount++;
+
+    if (secretClickCount === 1) {
+        clearTimeout(secretClickTimeout);
+        secretClickTimeout = setTimeout(() => { secretClickCount = 0; }, 3000);
+    }
+
+    if (secretClickCount === 5) {
+        clearTimeout(secretClickTimeout);
+        secretClickCount = 0; 
+
+        const accessKey = prompt("⚠️ تنبيه نظام حماية الأبعاد:\nالرجاء إدخل تعويذة السيطرة لإثبات هويتك كعاهل السيستم (المؤسس):");
+        if (accessKey === "sensei2026") { 
+            sessionStorage.setItem('systemAdminActive', "true"); 
+            alert("👑 أهلاً بك يا عاهل السيستم! بوابات السيطرة والتحول إلى وضع المؤسس مفتوحة تماماً الآن.");
+            fetchYouTubeData();
+        } else if (accessKey) {
+            alert("❌ تعويذة خاطئة! تم تفعيل بروتوكول حماية اللوحة الإدارية.");
+        }
+        return; 
+    }
     fetchYouTubeData();
 });
 

@@ -2,8 +2,8 @@
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// 💬 قاعدة البيانات الداخلية المدمجة الآمنة (عدلها من هنا أو أضف من لوحة المسؤول)
-let GLOBAL_DATABASE = {
+// 💬 الإعدادات والبيانات الافتراضية للسيستم عند التشغيل لأول مرة بالهاتف
+const DEFAULT_DATABASE = {
     commentsList: [
         { user: "HOUSSAMFRI@", text: "يا للأسف على كل هاد الجهود تروح بدون لايكات استمر❤" },
         { user: "عبدالرحمن _ مانهوا", text: "أفضل سيستم لدعم وتطوير القنوات الأسطورية!" }
@@ -34,16 +34,23 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 محرك تشغيل البيانات الداخلي والآمن ====================
+// ==================== 📡 محرك الحفظ واسترجاع البيانات المستقر (LocalStorage) ====================
 function fetchCloudData() {
-    return GLOBAL_DATABASE;
+    let localData = localStorage.getItem('system_database_core');
+    if (!localData) {
+        // إذا لم تكن هناك بيانات مخزنة بالهاتف، يتم حفظ وعرض البيانات الافتراضية فوراً
+        localStorage.setItem('system_database_core', JSON.stringify(DEFAULT_DATABASE));
+        return DEFAULT_DATABASE;
+    }
+    return JSON.parse(localData);
 }
 
 function saveToCloud(updatedFields) {
-    if (updatedFields.commentsList !== undefined) GLOBAL_DATABASE.commentsList = updatedFields.commentsList;
-    if (updatedFields.channelsList !== undefined) GLOBAL_DATABASE.channelsList = updatedFields.channelsList;
+    let currentDb = fetchCloudData();
+    if (updatedFields.commentsList !== undefined) currentDb.commentsList = updatedFields.commentsList;
+    if (updatedFields.channelsList !== undefined) currentDb.channelsList = updatedFields.channelsList;
     
-    alert("⚡ تم الحفظ والدمج داخل نواة السيستم بنجاح تام!");
+    localStorage.setItem('system_database_core', JSON.stringify(currentDb));
     fetchYouTubeData();
 }
 
@@ -111,6 +118,7 @@ function updateSystem(subs, cloudData) {
 
     const isAdmin = sessionStorage.getItem('systemAdminActive') === "true";
     
+    // 🛠️ معالجة قسم تعليقات الأوفياء
     if (currentLvl >= 2) {
         skills.push("💬 مهارة نشطة: [استدعاء تعليق حليف أوفى]");
         const container = document.getElementById('comments-container');
@@ -144,6 +152,7 @@ function updateSystem(subs, cloudData) {
         if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
+    // 🛠️ معالجة قسم بوابات دعم القنوات الحليفة
     if (currentLvl >= 5) { 
         skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
         const container = document.getElementById('alliance-container');
@@ -185,10 +194,32 @@ function updateSystem(subs, cloudData) {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    // 🔓 تفعيل ظهور لوحة الإدارة عند نجاح التعويذة السرية
+    // 👑 بناء قوائم الحذف الفردية داخل لوحة عاهل السيستم
     const adminPanel = document.getElementById('admin-panel');
     if (isAdmin) { 
         adminPanel.classList.remove('hidden');
+        
+        // 1. عرض وحذف التعليقات فرداً فرداً
+        const adminCommentsManageList = document.getElementById('admin-comments-manage-list');
+        adminCommentsManageList.innerHTML = `<p style="color: #ff9999; font-size: 11px; margin: 0 0 5px 0;">🗑️ اضغط على الزر بجانب أي تعليق لحذفه منفرداً:</p>`;
+        cloudData.commentsList.forEach((comment, index) => {
+            let row = document.createElement('div');
+            row.className = "item-manage-row";
+            row.innerHTML = `<span class="item-manage-text">👤 ${comment.user}: ${comment.text}</span>
+                             <button class="inline-delete-btn" onclick="deleteSingleComment(${index})">حذف ❌</button>`;
+            adminCommentsManageList.appendChild(row);
+        });
+
+        // 2. عرض وحذف البوابات فرداً فرداً
+        const adminChannelsManageList = document.getElementById('admin-channels-manage-list');
+        adminChannelsManageList.innerHTML = `<p style="color: #ff9999; font-size: 11px; margin: 0 0 5px 0;">🗑️ اضغط على الزر بجانب أي بوابة لإغلاقها وحذفها:</p>`;
+        cloudData.channelsList.forEach((channel, index) => {
+            let row = document.createElement('div');
+            row.className = "item-manage-row";
+            row.innerHTML = `<span class="item-manage-text">📢 ${channel.name}</span>
+                             <button class="inline-delete-btn" onclick="deleteSingleChannel(${index})">حذف ❌</button>`;
+            adminChannelsManageList.appendChild(row);
+        });
         
         if (!document.getElementById('logout-admin-btn')) {
             const logoutBtn = document.createElement('button');
@@ -209,6 +240,23 @@ function updateSystem(subs, cloudData) {
         adminPanel.classList.add('hidden'); 
         const oldBtn = document.getElementById('logout-admin-btn');
         if(oldBtn) oldBtn.remove();
+    }
+}
+
+// 🔮 دوال الحذف الفردية من النواة
+window.deleteSingleComment = function(index) {
+    let cloudData = fetchCloudData();
+    if(confirm(`هل أنت متأكد من حذف تعليق [${cloudData.commentsList[index].user}] نهائياً؟`)) {
+        cloudData.commentsList.splice(index, 1);
+        saveToCloud({ commentsList: cloudData.commentsList });
+    }
+}
+
+window.deleteSingleChannel = function(index) {
+    let cloudData = fetchCloudData();
+    if(confirm(`هل أنت متأكد من حذف بوابة دعم [${cloudData.channelsList[index].name}] نهائياً؟`)) {
+        cloudData.channelsList.splice(index, 1);
+        saveToCloud({ channelsList: cloudData.channelsList });
     }
 }
 
@@ -243,7 +291,7 @@ document.getElementById('save-channel-btn').addEventListener('click', async () =
     const url = document.getElementById('input-channel-url').value.trim();
     
     if(!name || !url) { 
-        alert("الرجاء إإدخال اسم القناة الحليفة ورابطها!"); 
+        alert("الرجاء إدخال اسم القناة الحليفة ورابطها!"); 
         return; 
     }
 
@@ -264,15 +312,15 @@ document.getElementById('save-channel-btn').addEventListener('click', async () =
     saveToCloud({ channelsList: currentChannels });
 });
 
-// 🗑️ أزرار التطهير وتصفير المصفوفات
+// 🗑️ أزرار التطهير وتصفير المصفوفات بالكامل
 document.getElementById('delete-comment-btn').addEventListener('click', () => {
-    if(confirm("هل أنت متأكد من مسح وتطهير قائمة التعليقات؟")) {
+    if(confirm("هل أنت متأكد من مسح وتطهير قائمة التعليقات بالكامل؟")) {
         saveToCloud({ commentsList: [] });
     }
 });
 
 document.getElementById('delete-channel-btn').addEventListener('click', () => {
-    if(confirm("هل أنت متأكد من إغلاق كافة بوابات الدعم الحالية؟")) {
+    if(confirm("هل أنت متأكد من إغلاق كافة بوابات الدعم الحالية بالكامل؟")) {
         saveToCloud({ channelsList: [] });
     }
 });
@@ -294,7 +342,7 @@ updateBtn.addEventListener('click', () => {
         clearTimeout(secretClickTimeout);
         secretClickCount = 0; 
 
-        const accessKey = prompt("⚠️ تنبيه نظام حماية الأبعاد:\nالرجاء إدخل تعويذة السيطرة لإثبات هويتك كعاهل السيستم (المؤسس):");
+        const accessKey = prompt("⚠️ تنبيه نظام حماية الأبعاد:\nالرجاء إدخال تعويذة السيطرة لإثبات هويتك كعاهل السيستم (المؤسس):");
         if (accessKey === "sensei2026") { 
             sessionStorage.setItem('systemAdminActive', "true"); 
             alert("👑 أهلاً بك يا عاهل السيستم! بوابات السيطرة والتحول إلى وضع المؤسس مفتوحة تماماً الآن.");

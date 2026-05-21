@@ -2,9 +2,8 @@
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// 🌐 رابط النواة السحابية العالمية لضمان ظهور البيانات في كل الهواتف
-const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/664c679fe41b4d34e4f738fe";
-const MASTER_KEY = "$2a$10$wR63P9B1m7Vfub/UisxZTe.7M.W9vJ6y6h8Z49lqY7KqRkQp6v2ia"; // مفتاح الحماية السحابي
+// 🌐 رابط النواة السحابية الكونية الجديدة المفتوحة والمستقرة (لكل الهواتف)
+const CLOUD_STORAGE_URL = "https://kvdb.io/MN7S6vX9fXvY6ZqP5vBc8d/sensei_system_data";
 
 // حالات التحكم في ميزة "إظهار المزيد"
 let showAllComments = false;
@@ -34,16 +33,15 @@ for (let i = 1; i <= 100; i++) {
 // ==================== 📡 محرك جلب البيانات السحابية العالمية ====================
 async function fetchCloudData() {
     try {
-        const response = await fetch(CLOUD_STORAGE_URL, {
-            method: 'GET',
-            headers: { 'X-Master-Key': MASTER_KEY }
-        });
+        const response = await fetch(CLOUD_STORAGE_URL);
         if (response.ok) {
             const result = await response.json();
-            return result.record; // إرجاع السجل السحابي المشترك لقناتك
+            if (result && (result.commentsList !== undefined || result.channelsList !== undefined)) {
+                return result; 
+            }
         }
     } catch (error) {
-        console.warn("خطأ في جلب البيانات السحابية، تفعيل المستودع الاحتياطي.");
+        console.warn("جاري إنشاء قاعدة بيانات سحابية جديدة أولى للسيستم...");
     }
     return { commentsList: [], channelsList: [] };
 }
@@ -57,12 +55,10 @@ async function saveToCloud(updatedFields) {
             channelsList: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
         };
 
+        // استخدام الـ POST المباشر والمقبول عالمياً في السيرفر الجديد
         const response = await fetch(CLOUD_STORAGE_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': MASTER_KEY
-            },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(finalData)
         });
 
@@ -70,10 +66,10 @@ async function saveToCloud(updatedFields) {
             alert("⚡ تم التحديث والمزامنة السحابية العالمية لجميع الهواتف بنجاح!");
             fetchYouTubeData();
         } else {
-            alert("❌ السيرفر السحابي رفض استقبال البيانات، حاول مجدداً.");
+            alert("❌ فشلت المزامنة، يرجى المحاولة مرة أخرى.");
         }
     } catch (error) {
-        alert("❌ فشل الاتصال بالسيرفر العالمي.");
+        alert("❌ خطأ غير متوقع في الاتصال بالنواة السحابية.");
     }
 }
 
@@ -131,6 +127,7 @@ function updateSystem(subs, cloudData) {
     currentCommentCountGlobal = (cloudData.commentsList || []).length;
     document.getElementById('comment-points-display').textContent = `${currentCommentCountGlobal} / ${maxCommentPoints}`;
 
+    // 📌 تعديل دعم القنوات الصارم: صفر في ليفل 4 ولا تفتح إلا في ليفل 5
     let maxChannelPoints = Math.floor(currentLvl / 5);
     currentChannelCountGlobal = (cloudData.channelsList || []).length;
     document.getElementById('channel-points-display').textContent = `${currentChannelCountGlobal} / ${maxChannelPoints}`;
@@ -141,7 +138,7 @@ function updateSystem(subs, cloudData) {
 
     const isAdmin = sessionStorage.getItem('systemAdminActive') === "true";
     
-    // 🔮 1. مهارة استدعاء تعليقات الأوفياء
+    // 🔮 1. مهارة استدعاء تعليقات الأوفياء (ليفل 2 فما فوق)
     if (currentLvl >= 2) {
         skills.push("💬 مهارة نشطة: [استدعاء تعليق حليف أوفى]");
         const container = document.getElementById('comments-container');
@@ -175,7 +172,7 @@ function updateSystem(subs, cloudData) {
         if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
-    // 🤝 2. مهارة بوابات دعم القنوات الحليفة (تظهر وتكسب نقاطها فقط من ليفل 5 فما فوق)
+    // 🤝 2. مهارة بوابات دعم القنوات الحليفة (تفتح حركياً فقط من ليفل 5)
     if (currentLvl >= 5) { 
         skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
         const container = document.getElementById('alliance-container');
@@ -217,7 +214,7 @@ function updateSystem(subs, cloudData) {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    // 👑 تدبير وإدارة لوحة عاهل السيستم برمجياً مع زر الخروج السريع
+    // 👑 لوحة التحكم وزر الخروج السريع التلقائي
     const adminPanel = document.getElementById('admin-panel');
     if (isAdmin) { 
         adminPanel.classList.remove('hidden');
@@ -250,7 +247,7 @@ document.getElementById('save-comment-btn').addEventListener('click', async () =
     const text = document.getElementById('input-fan-text').value.trim();
     
     if(!name || !text) { 
-        alert("الرجاء إدخال اسم المشترك ونصر التعليق أولاً!"); 
+        alert("الرجاء إدخال اسم المشترك ونص التعليق أولاً!"); 
         return; 
     }
 
@@ -312,17 +309,14 @@ document.getElementById('delete-channel-btn').addEventListener('click', () => {
 document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; fetchYouTubeData(); });
 document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; fetchYouTubeData(); });
 
-// ==================== 🛡️ بروتوكول حماية البوابة السرية (The Secret 5-Click Trigger) ====================
+// ==================== 🛡️ بروتوكول حماية البوابة السرية ====================
 const updateBtn = document.getElementById('update-btn');
-
 updateBtn.addEventListener('click', () => {
     secretClickCount++;
 
     if (secretClickCount === 1) {
         clearTimeout(secretClickTimeout);
-        secretClickTimeout = setTimeout(() => {
-            secretClickCount = 0; 
-        }, 3000);
+        secretClickTimeout = setTimeout(() => { secretClickCount = 0; }, 3000);
     }
 
     if (secretClickCount === 5) {
@@ -339,7 +333,6 @@ updateBtn.addEventListener('click', () => {
         }
         return; 
     }
-
     fetchYouTubeData();
 });
 

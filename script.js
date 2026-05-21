@@ -2,8 +2,8 @@
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// 🌐 رابط النواة السحابية الكونية الجديدة المفتوحة والمستقرة (لكل الهواتف)
-const CLOUD_STORAGE_URL = "https://kvdb.io/MN7S6vX9fXvY6ZqP5vBc8d/sensei_system_data";
+// 🌐 رابط النواة السحابية لـ Firebase من جوجل (مزامنة فورية لكل الهواتف بدون وسيط)
+const FIREBASE_URL = `https://sensei-system-default-rtdb.firebaseio.com/system_core.json?key=${API_KEY}`;
 
 // حالات التحكم في ميزة "إظهار المزيد"
 let showAllComments = false;
@@ -30,18 +30,21 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 محرك جلب البيانات السحابية العالمية ====================
+// ==================== 📡 محرك جلب البيانات السحابية من Firebase ====================
 async function fetchCloudData() {
     try {
-        const response = await fetch(CLOUD_STORAGE_URL);
+        const response = await fetch(FIREBASE_URL);
         if (response.ok) {
             const result = await response.json();
-            if (result && (result.commentsList !== undefined || result.channelsList !== undefined)) {
-                return result; 
+            if (result) {
+                return {
+                    commentsList: result.commentsList || [],
+                    channelsList: result.channelsList || []
+                };
             }
         }
     } catch (error) {
-        console.warn("جاري إنشاء قاعدة بيانات سحابية جديدة أولى للسيستم...");
+        console.warn("خطأ اتصال خفيف، تفعيل البروتوكول الاحتياطي للمصفوفات.");
     }
     return { commentsList: [], channelsList: [] };
 }
@@ -55,21 +58,21 @@ async function saveToCloud(updatedFields) {
             channelsList: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
         };
 
-        // استخدام الـ POST المباشر والمقبول عالمياً في السيرفر الجديد
-        const response = await fetch(CLOUD_STORAGE_URL, {
-            method: 'POST',
+        // إرسال البيانات بطريقة PUT المتوافقة تماماً مع Firebase و Netlify
+        const response = await fetch(FIREBASE_URL, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(finalData)
         });
 
         if (response.ok) {
-            alert("⚡ تم التحديث والمزامنة السحابية العالمية لجميع الهواتف بنجاح!");
+            alert("⚡ تم التحديث والمزامنة السحابية العالمية بنجاح التام!");
             fetchYouTubeData();
         } else {
-            alert("❌ فشلت المزامنة، يرجى المحاولة مرة أخرى.");
+            alert("❌ واجه السيرفر ضغطاً مؤقتاً، أعد المحاولة.");
         }
     } catch (error) {
-        alert("❌ خطأ غير متوقع في الاتصال بالنواة السحابية.");
+        alert("❌ خطأ غير متوقع في جدار حماية النواة.");
     }
 }
 
@@ -127,7 +130,7 @@ function updateSystem(subs, cloudData) {
     currentCommentCountGlobal = (cloudData.commentsList || []).length;
     document.getElementById('comment-points-display').textContent = `${currentCommentCountGlobal} / ${maxCommentPoints}`;
 
-    // 📌 تعديل دعم القنوات الصارم: صفر في ليفل 4 ولا تفتح إلا في ليفل 5
+    // 📌 ضبط نقاط الدعم: صفر في ليفل 4، وتفتح بوابة واحدة لكل 5 ليفلات بشكل صارم
     let maxChannelPoints = Math.floor(currentLvl / 5);
     currentChannelCountGlobal = (cloudData.channelsList || []).length;
     document.getElementById('channel-points-display').textContent = `${currentChannelCountGlobal} / ${maxChannelPoints}`;

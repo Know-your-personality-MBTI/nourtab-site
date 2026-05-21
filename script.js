@@ -1,11 +1,23 @@
 // ==================== لوحة تحكم البيانات الثابتة ====================
 
+// اكتب تعليقاتك هنا يدوياً (الخانات الفارغة ستحسب تلقائياً بناءً على مستواك الحالي)
 const MY_COMMENTS = [
-    { username:"@HOUSSAMFRI" , comment_text:"يا للأسف على كل هاد الجهود تروح بدون لايكات استمر❤"  },
- { username:"@M.zg08" , comment_text:"كل شي ممتاز مع الاستمراريه بتوصل بس حاول تزبط جوده صوتك او غير المايك و اختار قصص ما في احد ملخصها عشان تعطي الناس سبب تتابعك انت بس + حاول تختار مانهوا طويله جدا و تخليها اساسيه ف القناه و تبني جمهورك عليها مثل قناه مقهى الانمي و زوفان + و لا تلتزم ب النص حاول تطلع و تعطي تعليقك في لقطه معينه ف المقطع وترجع تكمل النص مثل الدقيقه 11:6"  },
- { username:"@Manhwa_factory" , comment_text:"يا للأسف على كل هاد الجهود تروح بدون لايكات استمرعاش ي اسطوره ربنا يوفقق يارب حاول متسرعش الفديو و خليه بصوتك الطبيعي زي باقي الاجزاء كمل الفديو لحد ميبقا مثلا ساعه و اعمل تجميعه حط فيها جميع الاجزاء + جزء جديد علشان تنتشر اسرع و اکثر و بسرعه الحكايه دي في شخص سواها و جاب ف تجميعتها حوالي ۱۹ الف مشاهده ولاكنك لا تساس و کمل اهم حاجه الاستمراريه ."  },
- { username:"@MahmudMahmad-z6j" , comment_text:"استمر يا بطل وان شاء الله تكون من المشهورين في الدنيا"  },
-
+    { 
+        username: "@HOUSSAMFRI", 
+        comment_text: "يا للأسف على كل هاد الجهود تروح بدون لايكات استمر❤" 
+    },
+    { 
+        username: "@M.zg08", 
+        comment_text: "كل شي ممتاز مع الاستمراريه بتوصل بس حاول تزبط جوده صوتك او غير المايك و اختار قصص ما في احد ملخصها عشان تعطي الناس سبب تتابعك انت بس + حاول تختار مانهوا طويله جدا و تخليها اساسيه ف القناه و تبني جمهورك عليها مثل قناه مقهى الانمي و زوفان + و لا تلتزم ب النص حاول تطلع و تعطي تعليقك في لقطه معينه ف المقطع وترجع تكمل النص مثل الدقيقه 11:6" 
+    },
+    { 
+        username: "@Manhwa_factory", 
+        comment_text: "يا للأسف على كل هاد الجهود تروح بدون لايكات استمرعاش ي اسطوره ربنا يوفقق يارب حاول متسرعش الفديو و خليه بصوتك الطبيعي زي باقي الاجزاء كمل الفديو لحد ميبقا مثلا ساعه و اعمل تجميعه حط فيها جميع الاجزاء + جزء جديد علشان تنتشر اسرع و اکثر و بسرعه الحكايه دي في شخص سواها و جاب ف تجميعتها حوالي ۱۹ الف مشاهده ولاكنك لا تساس و کمل اهم حاجه الاستمراريه ." 
+    },
+    { 
+        username: "@MahmudMahmad-z6j", 
+        comment_text: "استمر يا بطل وان شاء الله تكون من المشهورين في الدنيا" 
+    }
 ];
 
 const MY_CHANNELS = [
@@ -13,9 +25,13 @@ const MY_CHANNELS = [
     { channel_name: "بوابة المانهوا العالمية 📖", channel_url: "https://youtube.com" }
 ];
 
-const FIXED_SUBS = 303; 
+// 🆔 معرف قناتك الفريد الخاص بيوتيوب
+const YOUTUBE_CHANNEL_ID = "UCG87U2_XvGf4c9_OOn707bA"; 
 
 // ===================================================================
+
+let liveSubsCount = null; // يبدأ فارغاً ولا يحمل أي قيمة احتياطية خرافية
+let systemErrorMessage = "جاري الاتصال بالنظام... 📡"; 
 
 let showAllComments = false;
 let showAllChannels = false;
@@ -31,24 +47,79 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-function initSystem() {
-    document.getElementById('subs-display').textContent = FIXED_SUBS.toLocaleString();
+// دالة سحب حية وصارمة: إما الرقم الفعلي أو إظهار رسالة خطأ صريحة
+async function fetchYouTubeSubs() {
+    try {
+        systemErrorMessage = "جاري التحديث... 🔄";
+        updateSystemUI();
+
+        const webResponse = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/channel/' + YOUTUBE_CHANNEL_ID)}`);
+        
+        if (!webResponse.ok) throw new Error("فشل استجابة السيرفر الوسيط");
+
+        const webWrapper = await webResponse.json();
+        const htmlText = webWrapper.contents;
+        
+        const match = htmlText.match(/"subscriberCountText":\s*\{\s*"simpleText":\s*"([^"]+)"/);
+        
+        if (match && match[1]) {
+            const subsText = match[1].replace(/[^\d.]/g, ''); 
+            let actualSubs = parseFloat(subsText);
+            
+            if (match[1].includes('K') || match[1].includes('ألف')) actualSubs *= 1000;
+            if (match[1].includes('M') || match[1].includes('مليون')) actualSubs *= 1000000;
+            
+            if (!isNaN(actualSubs) && actualSubs >= 0) {
+                liveSubsCount = Math.floor(actualSubs);
+                systemErrorMessage = ""; // مسح الخطأ لنجاح العملية
+            } else {
+                throw new Error("لم يتم العثور على صيغة رقمية صالحة");
+            }
+        } else {
+            throw new Error("فشل قراءة كود المتابعين من صفحة يوتيوب");
+        }
+    } catch (error) {
+        liveSubsCount = null; // إلغاء أي رقم لمنع التضليل
+        systemErrorMessage = "خطأ في استدعاء البيانات ⚠️";
+        console.error("System Fetch Error: ", error);
+    }
+    updateSystemUI();
+}
+
+function updateSystemUI() {
+    const subsDisplay = document.getElementById('subs-display');
+    const currentLevelBox = document.getElementById('current-level');
+    const progressFill = document.getElementById('progress-fill');
+    const nextLevelSubs = document.getElementById('next-level-subs');
+    const systemWindow = document.getElementById('system-window');
+    const rankBadge = document.getElementById('rank-badge');
+
+    // حالة وجود خطأ في جلب البيانات
+    if (liveSubsCount === null) {
+        subsDisplay.textContent = systemErrorMessage;
+        currentLevelBox.textContent = "LV. ??";
+        progressFill.style.width = "0%";
+        nextLevelSubs.textContent = "غير متاح بسبب الخطأ";
+        rankBadge.textContent = "الطور: مجهول 🌀";
+        systemWindow.className = "system-window evolution-stage-error";
+        return; // إيقاف التحديث عند هذا الحد لمنع حساب المستويات بشكل خاطئ
+    }
+
+    // حالة النجاح: حساب المستويات بناءً على الرقم الحي الحقيقي
+    subsDisplay.textContent = liveSubsCount.toLocaleString();
     
     let currentLvl = 1;
-    for (let i = 1; i <= 100; i++) { if (FIXED_SUBS >= levelRequirements[i]) currentLvl = i; else break; }
-    document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
+    for (let i = 1; i <= 100; i++) { if (liveSubsCount >= levelRequirements[i]) currentLvl = i; else break; }
+    currentLevelBox.textContent = `LV. ${currentLvl}`;
 
     let currentMin = levelRequirements[currentLvl];
     let nextMax = levelRequirements[currentLvl + 1] || currentMin;
-    let percentage = nextMax !== currentMin ? ((FIXED_SUBS - currentMin) / (nextMax - currentMin)) * 100 : 100;
+    let percentage = nextMax !== currentMin ? ((liveSubsCount - currentMin) / (nextMax - currentMin)) * 100 : 100;
     
-    document.getElementById('progress-fill').style.width = `${percentage}%`;
-    document.getElementById('next-level-subs').textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - FIXED_SUBS).toLocaleString();
-
-    const systemWindow = document.getElementById('system-window');
-    const rankBadge = document.getElementById('rank-badge');
+    progressFill.style.width = `${percentage}%`;
+    nextLevelSubs.textContent = currentLvl === 100 ? "المستوى الأقصى" : (nextMax - liveSubsCount).toLocaleString();
     
-    if (FIXED_SUBS >= 1000) {
+    if (liveSubsCount >= 1000) {
         systemWindow.className = "system-window evolution-stage-2";
         rankBadge.textContent = "الطور: الأخضر المستيقظ ⚡";
     } else {
@@ -56,7 +127,7 @@ function initSystem() {
         rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
     }
 
-    // حساب وعرض عدد الخانات الفارغة المتبقية فوق القوائم مباشرة
+    // حساب الخانات الفارغة المتبقية للتعليقات
     const maxComments = currentLvl; 
     const emptyComments = maxComments - MY_COMMENTS.length;
     const commentPointsElem = document.getElementById('comment-points-display');
@@ -64,6 +135,7 @@ function initSystem() {
         commentPointsElem.textContent = emptyComments >= 0 ? emptyComments : 0;
     }
 
+    // حساب الخانات الفارغة المتبقية للقنوات حليفة
     const maxChannels = Math.floor(currentLvl / 5);
     const emptyChannels = maxChannels - MY_CHANNELS.length;
     const channelPointsElem = document.getElementById('channel-points-display');
@@ -128,7 +200,8 @@ function initSystem() {
     }
 }
 
-document.getElementById('update-btn').addEventListener('click', initSystem);
-document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; initSystem(); });
-document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; initSystem(); });
-window.addEventListener('DOMContentLoaded', initSystem);
+document.getElementById('update-btn').addEventListener('click', fetchYouTubeSubs);
+document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; updateSystemUI(); });
+document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; updateSystemUI(); });
+
+window.addEventListener('DOMContentLoaded', fetchYouTubeSubs);

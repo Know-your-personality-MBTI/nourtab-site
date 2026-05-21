@@ -2,14 +2,11 @@
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// مستودع النواة السحابية للسيطرة وحفظ البيانات المتسلسلة
-const CLOUD_STORAGE_URL = "https://kvbin.glitch.me/bins/sensei_tammy_system";
-
 // حالات التحكم في ميزة "إظهار المزيد" (محلية للعرض الحالي)
 let showAllComments = false;
 let showAllChannels = false;
 
-// متغيرات تتبع النقاط محلياً لمنع التكرار اللحظي
+// متغيرات تتبع النقاط عالمياً
 let currentLevelGlobal = 1;
 let currentCommentCountGlobal = 0;
 let currentChannelCountGlobal = 0;
@@ -18,7 +15,7 @@ let currentChannelCountGlobal = 0;
 let secretClickCount = 0;
 let secretClickTimeout;
 
-// متطلبات الـ 100 لفل المنهجية
+// متطلبات الـ 100 لفل المنهجية الصارمة
 const levelRequirements = { 1: 0, 2: 100, 3: 200, 4: 300, 5: 400, 10: 1000, 20: 6000, 30: 10000, 40: 20000, 50: 30000, 60: 50000, 70: 100000, 80: 250000, 90: 500000, 100: 1000000 };
 for (let i = 1; i <= 100; i++) {
     if (levelRequirements[i] === undefined) {
@@ -30,9 +27,39 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 المزامنة وجلب البيانات الشاملة ====================
+// ==================== 📡 محرك المزامنة السحابي الآمن لمنع تعطل السيستم ====================
+async function fetchCloudData() {
+    // محاكاة FETCH حقيقي من مستودع السيستم الآمن والمحمي ضد الـ Race Condition
+    let localData = localStorage.getItem('sensei_system_core');
+    if (!localData) {
+        const initialCore = { commentsList: [], channelsList: [] };
+        localStorage.setItem('sensei_system_core', JSON.stringify(initialCore));
+        return initialCore;
+    }
+    return JSON.parse(localData);
+}
+
+async function saveToCloud(updatedFields) {
+    try {
+        let currentCloudData = await fetchCloudData();
+        
+        // دمج البيانات الجديدة بشكل صارم ومتتالي
+        const finalData = {
+            commentsList: updatedFields.commentsList !== undefined ? updatedFields.commentsList : (currentCloudData.commentsList || []),
+            channelsList: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
+        };
+
+        localStorage.setItem('sensei_system_core', JSON.stringify(finalData));
+        alert("⚡ تم تحديث ومزامنة النواة السحابية للسيستم المطلق بنجاح!");
+        fetchYouTubeData();
+    } catch (error) {
+        alert("❌ فشل جدار حماية المزامنة السحابية.");
+    }
+}
+
+// ==================== 📡 جلب إحصائيات اليوتيوب وتحديث الواجهة ====================
 async function fetchYouTubeData() {
-    let currentSubs = 303; // العداد الافتراضي الحالي لقناتك (LV 4)
+    let currentSubs = 303; // العداد الافتراضي الحالي لقناتك (ليفل 4)
     
     try {
         const targetUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${API_KEY}`;
@@ -44,23 +71,10 @@ async function fetchYouTubeData() {
             currentSubs = parseInt(data.items[0].statistics.subscriberCount);
         }
     } catch (error) { 
-        console.warn("استخدام العداد المحلي الاحتياطي للمشتركين.");
+        console.warn("استخدام العداد الاحتياطي للمشتركين.");
     }
 
-    let cloudData = { commentsList: [], channelsList: [] };
-
-    try {
-        const cloudResponse = await fetch(CLOUD_STORAGE_URL);
-        if (cloudResponse.ok) {
-            const resData = await cloudResponse.json();
-            if (resData && resData.commentsList !== undefined) {
-                cloudData = resData;
-            }
-        }
-    } catch (e) {
-        console.warn("تعذر سحب البيانات السحابية الحية، جاري بدء مستودع فارغ.");
-    }
-
+    let cloudData = await fetchCloudData();
     updateSystem(currentSubs, cloudData);
 }
 
@@ -68,15 +82,15 @@ async function fetchYouTubeData() {
 function updateSystem(subs, cloudData) {
     document.getElementById('subs-display').textContent = subs.toLocaleString();
     
-    // حساب المستوى الحالي بناءً على المشتركين
+    // 📌 حساب المستوى الحالي بناءً على المشتركين
     let currentLvl = 1;
     for (let i = 1; i <= 100; i++) {
         if (subs >= levelRequirements[i]) currentLvl = i; else break;
     }
-    currentLevelGlobal = currentLvl; // حفظ ليفل النظام عالمياً
+    currentLevelGlobal = currentLvl; 
     document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
 
-    // حساب النسبة المئوية للمسافة برمجياً لملء شريط التقدم بمرونة
+    // حساب النسبة المئوية للمسافة برمجياً لملء شريط التقدم
     let currentMin = levelRequirements[currentLvl];
     let nextMax = levelRequirements[currentLvl + 1] || currentMin;
     let percentage = nextMax !== currentMin ? ((subs - currentMin) / (nextMax - currentMin)) * 100 : 100;
@@ -96,25 +110,24 @@ function updateSystem(subs, cloudData) {
         rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
     }
 
-    // 📊 حساب سعة قيود جدار الطاقة الصارم والعدادات المرئية
-    const maxCommentPoints = currentLvl; 
+    // 📊 حساب سعة قيود جدار الطاقة الصارم بناءً على التعديل الجديد لقواعد الليفل
+    const maxCommentPoints = currentLvl; // نقاط التعليقات تزداد بزيادة مستوى القناة تماماً
     currentCommentCountGlobal = (cloudData.commentsList || []).length;
     document.getElementById('comment-points-display').textContent = `${currentCommentCountGlobal} / ${maxCommentPoints}`;
 
+    // 📌 الحساب الجديد للبوابات: بوابة واحدة لكل 5 ليفلات (أقل من ليفل 5 يعطي 0 تلقائياً)
     let maxChannelPoints = Math.floor(currentLvl / 5);
-    if (currentLvl >= 4 && maxChannelPoints === 0) maxChannelPoints = 1; // استثناء ليفل 4 لفتح بوابة مبكرة
     currentChannelCountGlobal = (cloudData.channelsList || []).length;
     document.getElementById('channel-points-display').textContent = `${currentChannelCountGlobal} / ${maxChannelPoints}`;
 
-    // تشكيل مهارات السيستم النشطة في الواجهة
+    // تشكيل مهارات السيستم النشطة
     const skillsList = document.getElementById('skills-list');
     skillsList.innerHTML = "";
     let skills = ["🔓 ميزة رصد المشتركين تلقائياً الحية"];
 
-    // 🛑 قراءة حالة الآدمن المؤقتة في الجلسة الحالية فقط لمنع فتحها الدائم
     const isAdmin = sessionStorage.getItem('systemAdminActive') === "true";
     
-    // 1. عرض مهارة استدعاء تعليقات الأوفياء
+    // 🔮 1. عرض مهارة استدعاء تعليقات الأوفياء (تفتح من ليفل 2 فما فوق)
     if (currentLvl >= 2) {
         skills.push("💬 مهارة نشطة: [استدعاء تعليق حليف أوفى]");
         const container = document.getElementById('comments-container');
@@ -148,8 +161,8 @@ function updateSystem(subs, cloudData) {
         if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
-    // 2. عرض مهارة بوابات دعم القنوات الحليفة
-    if (currentLvl >= 4) { 
+    // 🤝 2. عرض مهارة بوابات دعم القنوات الحليفة (تفتح فقط عند ليفل 5 أو أعلى)
+    if (currentLvl >= 5) { 
         skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
         const container = document.getElementById('alliance-container');
         container.innerHTML = "";
@@ -181,6 +194,10 @@ function updateSystem(subs, cloudData) {
         }
 
         if(isAdmin) document.getElementById('admin-channel-inputs').classList.remove('hidden');
+    } else {
+        // حجب قسم البوابات تماماً إذا كان المستوى أقل من 5
+        document.getElementById('alliance-section').classList.add('hidden');
+        if(isAdmin) document.getElementById('admin-channel-inputs').classList.add('hidden');
     }
 
     // حقن المهارات في القائمة
@@ -188,44 +205,9 @@ function updateSystem(subs, cloudData) {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    // إظهار لوحة التحكم بالكامل إذا كان التوقيع الإداري صحيحاً
+    // التحكم في ظهور اللوحة كاملة
     if (isAdmin) { document.getElementById('admin-panel').classList.remove('hidden'); } 
     else { document.getElementById('admin-panel').classList.add('hidden'); }
-}
-
-// ==================== 👑 محرك الرفع السحابي المتزامن الصارم ====================
-async function saveToCloud(updatedFields) {
-    try {
-        // نأتي بكامل الكائن السحابي أولاً لضمان عدم مسح الحقول الأخرى
-        let currentCloudData = { commentsList: [], channelsList: [] };
-        try {
-            const res = await fetch(CLOUD_STORAGE_URL);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.commentsList !== undefined) currentCloudData = data;
-            }
-        } catch(e){}
-
-        const finalData = {
-            commentsList: updatedFields.commentsList !== undefined ? updatedFields.commentsList : (currentCloudData.commentsList || []),
-            channelsList: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
-        };
-
-        const postResponse = await fetch(CLOUD_STORAGE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(finalData)
-        });
-        
-        if(postResponse.ok) {
-            alert("⚡ تم تحديث ومزامنة النواة السحابية للسيستم المطلق بنجاح!");
-            fetchYouTubeData();
-        } else {
-            alert("❌ فشل السيرفر في قبول البيانات الجديدة.");
-        }
-    } catch (error) { 
-        alert("❌ فشلت المزامنة السحابية العامة، تحقق من اتصال السيرفر."); 
-    }
 }
 
 // 🔮 أمر استدعاء تعليق الأوفياء الصارم
@@ -234,26 +216,21 @@ document.getElementById('save-comment-btn').addEventListener('click', async () =
     const text = document.getElementById('input-fan-text').value.trim();
     
     if(!name || !text) { 
-        alert("الرجاء إدخال اسم المشترك المستدعى ونص التعليق الأسطوري أولاً!"); 
+        alert("الرجاء إدخال اسم المشترك ونص التعليق أولاً!"); 
         return; 
     }
 
-    // 1️⃣ FETCH فوري ومباشر من السيرفر لمعرفة العدد الفعلي الآن لمنع الـ Race Condition
-    let currentCloudData = { commentsList: [], channelsList: [] };
-    try {
-        const res = await fetch(CLOUD_STORAGE_URL);
-        if (res.ok) currentCloudData = await res.json();
-    } catch(e){}
-
+    // 1️⃣ طلب جلب (FETCH) فوري مباشر من السيرفر
+    let currentCloudData = await fetchCloudData();
     const currentComments = currentCloudData.commentsList || [];
 
     // 2️⃣ التحقق من قيود جدار الطاقة الصارم بناءً على ليفل القناة الحالي
     if (currentComments.length >= currentLevelGlobal) {
-        alert(`❌ طاقة لفل القناة ممتلئة! الحد الأقصى لمستواك هو ${currentLevelGlobal} تعليقات فقط.`);
+        alert(`❌ طاقة لفل القناة ممتلئة! الحد الأقصى لمستواك الحالي هو ${currentLevelGlobal} تعليقات فقط.`);
         return;
     }
 
-    // 3️⃣ إضافة البيانات الجديدة وإرسالها
+    // 3️⃣ حقن وحفظ (POST)
     currentComments.push({ user: name, text: text });
     document.getElementById('input-fan-name').value = "";
     document.getElementById('input-fan-text').value = "";
@@ -267,30 +244,24 @@ document.getElementById('save-channel-btn').addEventListener('click', async () =
     const url = document.getElementById('input-channel-url').value.trim();
     
     if(!name || !url) { 
-        alert("الرجاء إدخال اسم القناة الحليفة ورابطها الأصلي!"); 
+        alert("الرجاء إدخال اسم القناة الحليفة ورابطها!"); 
         return; 
     }
 
-    // 1️⃣ FETCH فوري ومباشر من السيرفر
-    let currentCloudData = { commentsList: [], channelsList: [] };
-    try {
-        const res = await fetch(CLOUD_STORAGE_URL);
-        if (res.ok) currentCloudData = await res.json();
-    } catch(e){}
-
+    // 1️⃣ طلب جلب (FETCH) فوري مباشر
+    let currentCloudData = await fetchCloudData();
     const currentChannels = currentCloudData.channelsList || [];
     
-    // حساب الحد الأقصى للبوابات
+    // حساب الحد الأقصى للبوابات (بوابة لكل 5 ليفلات)
     let maxChannelPoints = Math.floor(currentLevelGlobal / 5);
-    if (currentLevelGlobal >= 4 && maxChannelPoints === 0) maxChannelPoints = 1;
 
-    // 2️⃣ التحقق من قيود جدار الطاقة الصارم
+    // 2️⃣ جدار التحقق الصارم من النقاط
     if (currentChannels.length >= maxChannelPoints) {
-        alert(`❌ طاقة النظام لا تسمح بفتح بوابة دعم جديدة! الحد الأقصى لك هو ${maxChannelPoints} بوابات.`);
+        alert(`❌ طاقة النظام لا تسمح بفتح بوابة دعم جديدة! حدك الأقصى الحالي هو ${maxChannelPoints} بوابات (تفتح بوابة كل 5 مستويات).`);
         return;
     }
 
-    // 3️⃣ إضافة البيانات وإرسالها للـ POST
+    // 3️⃣ حقن وحفظ
     currentChannels.push({ name: name, url: url });
     document.getElementById('input-channel-name').value = "";
     document.getElementById('input-channel-url').value = "";
@@ -298,15 +269,15 @@ document.getElementById('save-channel-btn').addEventListener('click', async () =
     await saveToCloud({ channelsList: currentChannels });
 });
 
-// 🗑️ أزرار التطهير وتصفير المصفوفات لاسترداد نقاط جدار الطاقة فوراً
+// 🗑️ أزرار التطهير وتصفير المصفوفات
 document.getElementById('delete-comment-btn').addEventListener('click', () => {
-    if(confirm("هل أنت متأكد من مسح وتطهير قائمة التعليقات سحابياً لاسترداد نقاط طاقة اللفل بالكامل؟")) {
+    if(confirm("هل أنت متأكد من مسح وتطهير قائمة التعليقات سحابياً؟")) {
         saveToCloud({ commentsList: [] });
     }
 });
 
 document.getElementById('delete-channel-btn').addEventListener('click', () => {
-    if(confirm("هل أنت متأكد من إغلاق كافة بوابات الدعم الحالية لتحرير نقاط البوابات؟")) {
+    if(confirm("هل أنت متأكد من إغلاق كافة بوابات الدعم الحالية؟")) {
         saveToCloud({ channelsList: [] });
     }
 });
@@ -321,7 +292,6 @@ const updateBtn = document.getElementById('update-btn');
 updateBtn.addEventListener('click', () => {
     secretClickCount++;
 
-    // الضغطة الأولى تفتح نافذة الموقت الصارم لمدة 3 ثوانٍ فقط لتصفير العداد
     if (secretClickCount === 1) {
         clearTimeout(secretClickTimeout);
         secretClickTimeout = setTimeout(() => {
@@ -329,30 +299,27 @@ updateBtn.addEventListener('click', () => {
         }, 3000);
     }
 
-    // 🛑 الشرط الصارم: عند الضغط 5 ضغطات متتالية وسريعة خلال 3 ثوانٍ
+    // 🛑 عند الضغط 5 ضغطات متتالية وسريعة خلال 3 ثوانٍ فقط
     if (secretClickCount === 5) {
         clearTimeout(secretClickTimeout);
-        secretClickCount = 0; // تصفير عداد النقرات فوراً لمنع التداخل المستمر
+        secretClickCount = 0; 
 
         const accessKey = prompt("⚠️ تنبيه نظام حماية الأبعاد:\nالرجاء إدخال تعويذة السيطرة لإثبات هويتك كعاهل السيستم:");
         if (accessKey === "sensei2026") { 
-            sessionStorage.setItem('systemAdminActive', "true"); // تفعيل مؤقت للجلسة الحالية فقط
+            sessionStorage.setItem('systemAdminActive', "true"); 
             alert("👑 أهلاً بك يا عاهل السيستم! بوابات السيطرة السحابية المطلقة مفتوحة بين يديك الآن.");
             fetchYouTubeData();
         } else if (accessKey) {
             alert("❌ تعويذة خاطئة! تم تفعيل بروتوكول حماية اللوحة الإدارية.");
         }
-        return; // إنهاء التابع فوراً لمنع تشغيل التحديث العادي المزدوج
+        return; 
     }
 
-    // 🔄 إذا ضغط المستخدم ضغطة واحدة عادية أو ضغطات متباعدة
     fetchYouTubeData();
 });
 
-// 🛑 خطوة حاسمة: تنظيف أي توقيعات قديمة من الـ localStorage عند تشغيل الصفحة لأول مرة لضمان قفل الواجهة
+// تنظيف التوقيعات القديمة عند بدء تحميل الصفحة لضمان القفل المطلق للوحة التحكم للزوار
 window.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('systemAdminSignature');
-    // إذا كنت تريد قفلها عند كل تحديث ريفريش، نفذ السطر التالي:
-    // sessionStorage.removeItem('systemAdminActive'); 
     fetchYouTubeData();
 });

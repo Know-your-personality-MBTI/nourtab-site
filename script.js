@@ -2,7 +2,11 @@
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// حالات التحكم في ميزة "إظهار المزيد" (محلية للعرض الحالي)
+// 🌐 رابط النواة السحابية العالمية لضمان ظهور البيانات في كل الهواتف
+const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/664c679fe41b4d34e4f738fe";
+const MASTER_KEY = "$2a$10$wR63P9B1m7Vfub/UisxZTe.7M.W9vJ6y6h8Z49lqY7KqRkQp6v2ia"; // مفتاح الحماية السحابي
+
+// حالات التحكم في ميزة "إظهار المزيد"
 let showAllComments = false;
 let showAllChannels = false;
 
@@ -27,15 +31,21 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 محرك المزامنة السحابي الآمن لمنع تعطل السيستم ====================
+// ==================== 📡 محرك جلب البيانات السحابية العالمية ====================
 async function fetchCloudData() {
-    let localData = localStorage.getItem('sensei_system_core');
-    if (!localData) {
-        const initialCore = { commentsList: [], channelsList: [] };
-        localStorage.setItem('sensei_system_core', JSON.stringify(initialCore));
-        return initialCore;
+    try {
+        const response = await fetch(CLOUD_STORAGE_URL, {
+            method: 'GET',
+            headers: { 'X-Master-Key': MASTER_KEY }
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.record; // إرجاع السجل السحابي المشترك لقناتك
+        }
+    } catch (error) {
+        console.warn("خطأ في جلب البيانات السحابية، تفعيل المستودع الاحتياطي.");
     }
-    return JSON.parse(localData);
+    return { commentsList: [], channelsList: [] };
 }
 
 async function saveToCloud(updatedFields) {
@@ -47,11 +57,23 @@ async function saveToCloud(updatedFields) {
             channelsList: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
         };
 
-        localStorage.setItem('sensei_system_core', JSON.stringify(finalData));
-        alert("⚡ تم تحديث ومزامنة النواة السحابية للسيستم المطلق بنجاح!");
-        fetchYouTubeData();
+        const response = await fetch(CLOUD_STORAGE_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': MASTER_KEY
+            },
+            body: JSON.stringify(finalData)
+        });
+
+        if (response.ok) {
+            alert("⚡ تم التحديث والمزامنة السحابية العالمية لجميع الهواتف بنجاح!");
+            fetchYouTubeData();
+        } else {
+            alert("❌ السيرفر السحابي رفض استقبال البيانات، حاول مجدداً.");
+        }
     } catch (error) {
-        alert("❌ فشل جدار حماية المزامنة السحابية.");
+        alert("❌ فشل الاتصال بالسيرفر العالمي.");
     }
 }
 
@@ -153,7 +175,7 @@ function updateSystem(subs, cloudData) {
         if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
-    // 🤝 2. مهارة بوابات دعم القنوات الحليفة
+    // 🤝 2. مهارة بوابات دعم القنوات الحليفة (تظهر وتكسب نقاطها فقط من ليفل 5 فما فوق)
     if (currentLvl >= 5) { 
         skills.push("🤝 مهارة فريدة: [فتح بوابة دعم القنوات الحليفة]");
         const container = document.getElementById('alliance-container');
@@ -195,19 +217,17 @@ function updateSystem(subs, cloudData) {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    // 👑 تدبير وإدارة لوحة عاهل السيستم برمجياً مع إضافة زر الخروج السريع
+    // 👑 تدبير وإدارة لوحة عاهل السيستم برمجياً مع زر الخروج السريع
     const adminPanel = document.getElementById('admin-panel');
     if (isAdmin) { 
         adminPanel.classList.remove('hidden');
         
-        // إذا لم يكن زر تسجيل الخروج موجوداً، نقوم بحقنه برمجياً في أعلى اللوحة
         if (!document.getElementById('logout-admin-btn')) {
             const logoutBtn = document.createElement('button');
             logoutBtn.id = "logout-admin-btn";
             logoutBtn.innerHTML = "🔒 قفل وبث حماية السيستم (الخروج من وضع المسؤول)";
             logoutBtn.style = "background: #220505; color: #ff3333; border: 1px dashed #ff3333; padding: 7px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; margin-bottom: 15px;";
             
-            // إضافة حدث الضغط للقفل المباشر عند النقر عليه
             logoutBtn.addEventListener('click', () => {
                 if (confirm("هل أنت متأكد من تفعيل بروتوكول القفل الفوري وحجب لوحة عاهل السيستم؟")) {
                     sessionStorage.removeItem('systemAdminActive'); 
@@ -215,13 +235,10 @@ function updateSystem(subs, cloudData) {
                     fetchYouTubeData(); 
                 }
             });
-            
-            // وضعه في بداية لوحة الأدمن بعد العنوان مباشرة
             adminPanel.insertBefore(logoutBtn, adminPanel.children[1]);
         }
     } else { 
         adminPanel.classList.add('hidden'); 
-        // تنظيف الزر إذا حُجبت اللوحة
         const oldBtn = document.getElementById('logout-admin-btn');
         if(oldBtn) oldBtn.remove();
     }
@@ -233,7 +250,7 @@ document.getElementById('save-comment-btn').addEventListener('click', async () =
     const text = document.getElementById('input-fan-text').value.trim();
     
     if(!name || !text) { 
-        alert("الرجاء إدخال اسم المشترك ونص التعليق أولاً!"); 
+        alert("الرجاء إدخال اسم المشترك ونصر التعليق أولاً!"); 
         return; 
     }
 

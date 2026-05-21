@@ -5,8 +5,17 @@ const SUPABASE_KEY = "sb_publishable_kAcNMskOeWtXx4EHDTtZgA_a9onaOOM";
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// ربط النواة بـ Supabase تلقائياً
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ربط النواة بـ Supabase بطريقة آمنة ومضمونة لمنع التجمد
+let supabase = null;
+try {
+    if (typeof window.supabase !== 'undefined') {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else if (typeof Supabase !== 'undefined') {
+        supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+} catch (err) {
+    console.error("جدار الحماية السحابي لم يكتمل تحميله بعد:", err);
+}
 
 let showAllComments = false;
 let showAllChannels = false;
@@ -36,11 +45,19 @@ async function fetchYouTubeData() {
         if (data && data.items && data.items.length > 0) currentSubs = parseInt(data.items[0].statistics.subscriberCount);
     } catch (e) { console.warn("العداد الاحتياطي نشط."); }
 
-    // جلب التعليقات والقنوات من جدول السيرفر المشترك
-    const { data: dbComments } = await supabase.from('channel_comments').select('*').order('created_at', { ascending: true });
-    const { data: dbChannels } = await supabase.from('channel_alliances').select('*').order('created_at', { ascending: true });
+    let dbComments = [];
+    let dbChannels = [];
 
-    updateSystem(currentSubs, { commentsList: dbComments || [], channelsList: dbChannels || [] });
+    if (supabase) {
+        try {
+            const { data: comms } = await supabase.from('channel_comments').select('*').order('created_at', { ascending: true });
+            const { data: chans } = await supabase.from('channel_alliances').select('*').order('created_at', { ascending: true });
+            if (comms) dbComments = comms;
+            if (chans) dbChannels = chans;
+        } catch (err) { console.error("خطأ في جلب بيانات السيرفر:", err); }
+    }
+
+    updateSystem(currentSubs, { commentsList: dbComments, channelsList: dbChannels });
 }
 
 // ==================== 🌌 بناء وتحديث الواجهة لجميع الهواتف بشكل متزامن ====================
@@ -166,10 +183,12 @@ document.getElementById('save-comment-btn').addEventListener('click', async () =
     const text = document.getElementById('input-fan-text').value.trim();
     if(!name || !text) return alert("املاً الحقول أولاً!");
 
-    await supabase.from('channel_comments').insert([{ username: name, comment_text: text }]);
-    document.getElementById('input-fan-name').value = ""; document.getElementById('input-fan-text').value = "";
-    alert("⚡ تم بث وتعليق الصوت الأسطوري لجميع الهواتف!");
-    fetchYouTubeData();
+    if(supabase) {
+        await supabase.from('channel_comments').insert([{ username: name, comment_text: text }]);
+        document.getElementById('input-fan-name').value = ""; document.getElementById('input-fan-text').value = "";
+        alert("⚡ تم بث وتعليق الصوت الأسطوري لجميع الهواتف!");
+        fetchYouTubeData();
+    }
 });
 
 document.getElementById('save-channel-btn').addEventListener('click', async () => {
@@ -177,21 +196,42 @@ document.getElementById('save-channel-btn').addEventListener('click', async () =
     const url = document.getElementById('input-channel-url').value.trim();
     if(!name || !url) return alert("املاً الحقول أولاً!");
 
-    await supabase.from('channel_alliances').insert([{ channel_name: name, channel_url: url }]);
-    document.getElementById('input-channel-name').value = ""; document.getElementById('input-channel-url').value = "";
-    alert("🔥 تم فتح البوابة وبثها لجميع الهواتف!");
-    fetchYouTubeData();
+    if(supabase) {
+        await supabase.from('channel_alliances').insert([{ channel_name: name, channel_url: url }]);
+        document.getElementById('input-channel-name').value = ""; document.getElementById('input-channel-url').value = "";
+        alert("🔥 تم فتح البوابة وبثها لجميع الهواتف!");
+        fetchYouTubeData();
+    }
+});
+
+// تصفير وتنظيف القوائم بالكامل عند الضغط على أزرار الحذف الكبيرة
+document.getElementById('delete-comment-btn').addEventListener('click', async () => {
+    if(confirm("هل أنت متأكد من مسح وتصفير قائمة التعليقات بالكامل من السيرفر؟")) {
+        if(supabase) {
+            await supabase.from('channel_comments').delete().neq('id', 0);
+            fetchYouTubeData();
+        }
+    }
+});
+
+document.getElementById('delete-channel-btn').addEventListener('click', async () => {
+    if(confirm("هل أنت متأكد من إغلاق وتصفير جميع بوابات الدعم من السيرفر؟")) {
+        if(supabase) {
+            await supabase.from('channel_alliances').delete().neq('id', 0);
+            fetchYouTubeData();
+        }
+    }
 });
 
 window.apiDeleteComment = function(id) {
     if(confirm("حذف هذا التعليق نهائياً من كل الأبعاد؟")) {
-        supabase.from('channel_comments').delete().eq('id', id).then(() => fetchYouTubeData());
+        if(supabase) supabase.from('channel_comments').delete().eq('id', id).then(() => fetchYouTubeData());
     }
 }
 
 window.apiDeleteChannel = function(id) {
     if(confirm("إغلاق وحذف هذه البوابة نهائياً عند الجميع؟")) {
-        supabase.from('channel_alliances').delete().eq('id', id).then(() => fetchYouTubeData());
+        if(supabase) supabase.from('channel_alliances').delete().eq('id', id).then(() => fetchYouTubeData());
     }
 }
 

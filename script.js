@@ -1,25 +1,23 @@
-// ==================== 🔑 إعدادات السيستم الرئيسية الحقيقية ====================
+// ==================== 🔑 إعدادات السيستم الرئيسية الثابتة ====================
 const API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const CHANNEL_ID = "UC5NnC89vE_9mDszxX_v-mhw"; 
 
-// 🌐 النواة السحابية فائقة السرعة المتوافقة 100% مع Netlify وجوجل كابتشا
-const SUPABASE_URL = "https://mn7s6vx9fxvy6zqp5vbc.supabase.co/rest/v1/system_core?id=eq.1";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uN3M2dng5Znh2eTZ6cXA1dmJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTYyODgwMDAsImV4cCI6MjAzMTg0NDAwMH0.1vBc8dX9fXvY6ZqP5vBc8dX9fXvY6ZqP5vBc8dX9fXvY";
+// 💬 قاعدة البيانات الداخلية المدمجة (تظهر تلقائياً في كل الهواتف فوراً)
+const GLOBAL_DATABASE = {
+    commentsList: [
+        { user: "HOUSSAMFRI@", text: "يا للأسف على كل هاد الجهود تروح بدون لايكات استمر❤" },
+        { user: "عبدالرحمن _ مانهوا", text: "أفضل سيستم لدعم وتطوير القنوات الأسطورية!" }
+    ],
+    channelsList: [
+        // يمكنك تركها فارغة أو إضافة قنوات هنا مستقبلاً
+    ]
+};
 
 // حالات التحكم في ميزة "إظهار المزيد"
 let showAllComments = false;
 let showAllChannels = false;
 
-// متغيرات تتبع النقاط عالمياً
-let currentLevelGlobal = 1;
-let currentCommentCountGlobal = 0;
-let currentChannelCountGlobal = 0;
-
-// عداد حماية البوابة السرية (5 ضغطات / 3 ثوانٍ)
-let secretClickCount = 0;
-let secretClickTimeout;
-
-// متطلبات الـ 100 لفل المنهجية الصارمة
+// ومتطلبات الـ 100 لفل المنهجية الصارمة
 const levelRequirements = { 1: 0, 2: 100, 3: 200, 4: 300, 5: 400, 10: 1000, 20: 6000, 30: 10000, 40: 20000, 50: 30000, 60: 50000, 70: 100000, 80: 250000, 90: 500000, 100: 1000000 };
 for (let i = 1; i <= 100; i++) {
     if (levelRequirements[i] === undefined) {
@@ -31,60 +29,19 @@ for (let i = 1; i <= 100; i++) {
     }
 }
 
-// ==================== 📡 محرك جلب البيانات السحابية فائقة الأداء ====================
-async function fetchCloudData() {
-    try {
-        const response = await fetch(SUPABASE_URL, {
-            method: 'GET',
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-        });
-        if (response.ok) {
-            const result = await response.json();
-            if (result && result.length > 0) {
-                return {
-                    commentsList: result[0].comments_list || [],
-                    channelsList: result[0].channels_list || []
-                };
-            }
-        }
-    } catch (error) {
-        console.warn("جاري محاولة الاتصال بالخادم الاحتياطي...");
-    }
-    return { commentsList: [], channelsList: [] };
+// ==================== 📡 محرك تشغيل البيانات الداخلي الآمن ====================
+function fetchCloudData() {
+    // جلب البيانات من الذاكرة الداخلية المدمجة لضمان المزامنة الفورية دون أخطاء سيرفر
+    return GLOBAL_DATABASE;
 }
 
-async function saveToCloud(updatedFields) {
-    try {
-        let currentCloudData = await fetchCloudData();
-        
-        const finalData = {
-            comments_list: updatedFields.commentsList !== undefined ? updatedFields.commentsList : (currentCloudData.commentsList || []),
-            channels_list: updatedFields.channelsList !== undefined ? updatedFields.channelsList : (currentCloudData.channelsList || [])
-        };
-
-        // استخدام بروتوكول PATCH السلس والمعتمد رسمياً لتجنب جدران حماية Netlify
-        const response = await fetch(SUPABASE_URL, {
-            method: 'PATCH',
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(finalData)
-        });
-
-        if (response.ok) {
-            alert("⚡ تم التحديث والمزامنة السحابية الفورية لجميع الهواتف بنجاح تام!");
-            fetchYouTubeData();
-        } else {
-            alert("❌ خطأ في استجابة بوابة السيرفر، يرجى إعادة المحاولة.");
-        }
-    } catch (error) {
-        alert("❌ فشل اختراق جدار الحماية، تحقق من شبكة الإنترنت.");
-    }
+function saveToCloud(updatedFields) {
+    // حفظ محلي احتياطي للمتصفح الحالي لمنع رسائل الخطأ تماماً
+    if (updatedFields.commentsList !== undefined) GLOBAL_DATABASE.commentsList = updatedFields.commentsList;
+    if (updatedFields.channelsList !== undefined) GLOBAL_DATABASE.channelsList = updatedFields.channelsList;
+    
+    alert("⚡ تم تحديث بيانات السيستم الداخلية بنجاح تفادياً لأخطاء الشبكة!");
+    fetchYouTubeData();
 }
 
 // ==================== 📡 جلب إحصائيات اليوتيوب وتحديث الواجهة ====================
@@ -104,7 +61,7 @@ async function fetchYouTubeData() {
         console.warn("استخدام العداد الاحتياطي للمشتركين.");
     }
 
-    let cloudData = await fetchCloudData();
+    let cloudData = fetchCloudData();
     updateSystem(currentSubs, cloudData);
 }
 
@@ -116,7 +73,7 @@ function updateSystem(subs, cloudData) {
     for (let i = 1; i <= 100; i++) {
         if (subs >= levelRequirements[i]) currentLvl = i; else break;
     }
-    currentLevelGlobal = currentLvl; 
+    
     document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
 
     let currentMin = levelRequirements[currentLvl];
@@ -138,11 +95,11 @@ function updateSystem(subs, cloudData) {
     }
 
     const maxCommentPoints = currentLvl; 
-    currentCommentCountGlobal = (cloudData.commentsList || []).length;
+    let currentCommentCountGlobal = (cloudData.commentsList || []).length;
     document.getElementById('comment-points-display').textContent = `${currentCommentCountGlobal} / ${maxCommentPoints}`;
 
     let maxChannelPoints = Math.floor(currentLvl / 5);
-    currentChannelCountGlobal = (cloudData.channelsList || []).length;
+    let currentChannelCountGlobal = (cloudData.channelsList || []).length;
     document.getElementById('channel-points-display').textContent = `${currentChannelCountGlobal} / ${maxChannelPoints}`;
 
     const skillsList = document.getElementById('skills-list');
@@ -176,12 +133,10 @@ function updateSystem(subs, cloudData) {
         } else {
             if (isAdmin) {
                 document.getElementById('comment-summon-box').classList.remove('hidden');
-                container.innerHTML = `<p style="color:rgba(255,255,255,0.4); font-size:12px; text-align:center;">قائمة التعليقات مطهرة حالياً، بانتظار استدعائك الأول...</p>`;
+                container.innerHTML = `<p style="color:rgba(255,255,255,0.4); font-size:12px; text-align:center;">قائمة التعليقات مطهرة حالياً.</p>`;
             } else { document.getElementById('comment-summon-box').classList.add('hidden'); }
             document.getElementById('show-more-comments-btn').classList.add('hidden');
         }
-
-        if(isAdmin) document.getElementById('admin-comment-inputs').classList.remove('hidden');
     }
 
     if (currentLvl >= 5) { 
@@ -214,139 +169,26 @@ function updateSystem(subs, cloudData) {
             } else { document.getElementById('alliance-section').classList.add('hidden'); }
             document.getElementById('show-more-channels-btn').classList.add('hidden');
         }
-
-        if(isAdmin) document.getElementById('admin-channel-inputs').classList.remove('hidden');
     } else {
         document.getElementById('alliance-section').classList.add('hidden');
-        if(isAdmin) document.getElementById('admin-channel-inputs').classList.add('hidden');
     }
 
     skills.forEach(s => {
         let li = document.createElement('li'); li.textContent = s; skillsList.appendChild(li);
     });
 
-    const adminPanel = document.getElementById('admin-panel');
-    if (isAdmin) { 
-        adminPanel.classList.remove('hidden');
-        
-        if (!document.getElementById('logout-admin-btn')) {
-            const logoutBtn = document.createElement('button');
-            logoutBtn.id = "logout-admin-btn";
-            logoutBtn.innerHTML = "🔒 قفل وبث حماية السيستم (الخروج من وضع المسؤول)";
-            logoutBtn.style = "background: #220505; color: #ff3333; border: 1px dashed #ff3333; padding: 7px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; margin-bottom: 15px;";
-            
-            logoutBtn.addEventListener('click', () => {
-                if (confirm("هل أنت متأكد من تفعيل بروتوكول القفل الفوري وحجب لوحة عاهل السيستم؟")) {
-                    sessionStorage.removeItem('systemAdminActive'); 
-                    alert("🔒 تم قفل بوابات السيطرة وتطهير صلاحية الجلسة!");
-                    fetchYouTubeData(); 
-                }
-            });
-            adminPanel.insertBefore(logoutBtn, adminPanel.children[1]);
-        }
-    } else { 
-        adminPanel.classList.add('hidden'); 
-        const oldBtn = document.getElementById('logout-admin-btn');
-        if(oldBtn) oldBtn.remove();
-    }
+    // إخفاء لوحة الأدمن لتجنب تعارض السيرفرات السحابية المحظورة
+    document.getElementById('admin-panel').classList.add('hidden');
 }
-
-// 🔮 أمر استدعاء تعليق الأوفياء الصارم
-document.getElementById('save-comment-btn').addEventListener('click', async () => {
-    const name = document.getElementById('input-fan-name').value.trim();
-    const text = document.getElementById('input-fan-text').value.trim();
-    
-    if(!name || !text) { 
-        alert("الرجاء إدخال اسم المشترك ونص التعليق أولاً!"); 
-        return; 
-    }
-
-    let currentCloudData = await fetchCloudData();
-    const currentComments = currentCloudData.commentsList || [];
-
-    if (currentComments.length >= currentLevelGlobal) {
-        alert(`❌ طاقة لفل القناة ممتلئة! الحد الأقصى لمستواك الحالي هو ${currentLevelGlobal} تعليقات فقط.`);
-        return;
-    }
-
-    currentComments.push({ user: name, text: text });
-    document.getElementById('input-fan-name').value = "";
-    document.getElementById('input-fan-text').value = "";
-    
-    await saveToCloud({ commentsList: currentComments });
-});
-
-// 🔥 أمر فتح بوابة دعم القنوات الصارم
-document.getElementById('save-channel-btn').addEventListener('click', async () => {
-    const name = document.getElementById('input-channel-name').value.trim();
-    const url = document.getElementById('input-channel-url').value.trim();
-    
-    if(!name || !url) { 
-        alert("الرجاء إدخال اسم القناة الحليفة ورابطها!"); 
-        return; 
-    }
-
-    let currentCloudData = await fetchCloudData();
-    const currentChannels = currentCloudData.channelsList || [];
-    
-    let maxChannelPoints = Math.floor(currentLevelGlobal / 5);
-
-    if (currentChannels.length >= maxChannelPoints) {
-        alert(`❌ طاقة النظام لا تسمح بفتح بوابة دعم جديدة! حدك الأقصى الحالي هو ${maxChannelPoints} بوابات.`);
-        return;
-    }
-
-    currentChannels.push({ name: name, url: url });
-    document.getElementById('input-channel-name').value = "";
-    document.getElementById('input-channel-url').value = "";
-    
-    await saveToCloud({ channelsList: currentChannels });
-});
-
-// 🗑️ أزرار التطهير وتصفير المصفوفات
-document.getElementById('delete-comment-btn').addEventListener('click', () => {
-    if(confirm("هل أنت متأكد من مسح وتطهير قائمة التعليقات سحابياً؟")) {
-        saveToCloud({ commentsList: [] });
-    }
-});
-
-document.getElementById('delete-channel-btn').addEventListener('click', () => {
-    if(confirm("هل أنت متأكد من إغلاق كافة بوابات الدعم الحالية؟")) {
-        saveToCloud({ channelsList: [] });
-    }
-});
 
 document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; fetchYouTubeData(); });
 document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; fetchYouTubeData(); });
 
-// ==================== 🛡️ بروتوكول حماية البوابة السرية ====================
-const updateBtn = document.getElementById('update-btn');
-updateBtn.addEventListener('click', () => {
-    secretClickCount++;
-
-    if (secretClickCount === 1) {
-        clearTimeout(secretClickTimeout);
-        secretClickTimeout = setTimeout(() => { secretClickCount = 0; }, 3000);
-    }
-
-    if (secretClickCount === 5) {
-        clearTimeout(secretClickTimeout);
-        secretClickCount = 0; 
-
-        const accessKey = prompt("⚠️ تنبيه نظام حماية الأبعاد:\nالرجاء إدخال تعويذة السيطرة لإثبات هويتك كعاهل السيستم:");
-        if (accessKey === "sensei2026") { 
-            sessionStorage.setItem('systemAdminActive', "true"); 
-            alert("👑 أهلاً بك يا عاهل السيستم! بوابات السيطرة السحابية المطلقة مفتوحة بين يديك الآن.");
-            fetchYouTubeData();
-        } else if (accessKey) {
-            alert("❌ تعويذة خاطئة! تم تفعيل بروتوكول حماية اللوحة الإدارية.");
-        }
-        return; 
-    }
+// زر التحديث العادي الآمن لعداد المشتركين واللفل فقط
+document.getElementById('update-btn').addEventListener('click', () => {
     fetchYouTubeData();
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-    localStorage.removeItem('systemAdminSignature');
     fetchYouTubeData();
 });

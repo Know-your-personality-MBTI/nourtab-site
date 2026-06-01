@@ -1,7 +1,7 @@
 // 🔑 إعدادات السيستم المستقل
 const YOUTUBE_API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const YOUTUBE_CHANNEL_ID = "UCZwO3TMEASfTcKCzYMBxy3w";
-const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/example"; // ضع رابط السيرفر السحابي الخاص بك هنا
+const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc"; // رابط السيرفر السحابي الجديد الخاص بك
 
 let showAllChannels = false;
 let showAllComments = false; 
@@ -30,7 +30,7 @@ async function loadCloudData() {
         const response = await fetch(CLOUD_STORAGE_URL);
         if (response.ok) {
             const data = await response.json();
-            // تخصيص الاستجابة حسب هيكلة السيرفر الخاص بك (مثلاً JSONBin يستخدم data.record)
+            // JSONBin يعيد البيانات دائماً داخل كائن مسمى record
             const record = data.record || data; 
             return {
                 commentsList: record.commentsList || [],
@@ -215,7 +215,7 @@ async function addEntry(type) {
     if (type === 'comment') {
         const maxComments = currentLvl;
         if (cloudData.commentsList.length >= maxComments) {
-            return alert("❌ طاقة لفل القناة ممتلئة! لا يمكنك استدعاء المزيد من التعليقات في هذا المستوى.");
+            return alert("❌ طاقة لفل القناة ممتلئة! لا يمكنك استدعاء المزيد من التعليقات in هذا المستوى.");
         }
         
         const userName = document.getElementById('input-fan-name').value.trim();
@@ -266,9 +266,12 @@ async function sendCloudUpdate(data) {
         localStorage.setItem('localComments', JSON.stringify(data.commentsList));
         localStorage.setItem('localChannels', JSON.stringify(data.channelsList));
         
+        // تعديل مهم: JSONBin يتطلب إرسال الحاوية بشكل مباشر، وبما أن المفاتيح غير ممررة، يفضل إرسالها دون تداخل
         await fetch(CLOUD_STORAGE_URL, {
-            method: 'PUT', // تم اعتماد PUT لتحديث الحاويات السحابية مثل JSONBin بشكل سليم
-            headers: { 'Content-Type': 'application/json' },
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(data)
         });
     } catch(e) { 

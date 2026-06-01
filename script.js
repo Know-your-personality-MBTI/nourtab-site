@@ -1,9 +1,7 @@
 // 🔑 إعدادات السيستم المستقل
 const YOUTUBE_API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const YOUTUBE_CHANNEL_ID = "UCZwO3TMEASfTcKCzYMBxy3w";
-// 🌐 تم تعديل الرابط السحابي هنا لإجبار النظام على قراء النسخة الأحدث دائماً
 const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc/latest"; 
-// 🌐 رابط خاص بعملية التحديث المباشر بدون توليد نسخ فرعية مكررة
 const CLOUD_UPDATE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc";
 
 let showAllChannels = false;
@@ -32,15 +30,19 @@ async function loadCloudData() {
         const response = await fetch(CLOUD_STORAGE_URL, {
             method: 'GET',
             headers: {
-                "X-Master-Key": "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS"
+                "X-Master-Key": "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS",
+                // 🛑 منع الكاش تماماً لإجبار المتصفحات والهواتف الأخرى على جلب البيانات الحية فوراً
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache"
             }
         });
         if (response.ok) {
             const data = await response.json();
-            const record = data.record || data; 
+            // استخراج دقيق للمصفوفات سواء كانت داخل record أو مباشرة
+            const record = data.record || data;
             return {
-                commentsList: record.commentsList || [],
-                channelsList: record.channelsList || []
+                commentsList: record.commentsList || record.record?.commentsList || [],
+                channelsList: record.channelsList || record.record?.channelsList || []
             };
         }
     } catch (e) { 
@@ -253,15 +255,20 @@ async function sendCloudUpdate(data) {
         localStorage.setItem('localComments', JSON.stringify(data.commentsList));
         localStorage.setItem('localChannels', JSON.stringify(data.channelsList));
         
-        // 🚀 تم تعديل الرابط وعناوين الإرسال لتعطيل النسخ الاحتياطية وإجبار التحديث المباشر
+        // تجهيز مغلف نظيف للبيانات لمنع تداخل طبقات JSONBin القديمة
+        const cleanPayload = {
+            commentsList: data.commentsList,
+            channelsList: data.channelsList
+        };
+
         await fetch(CLOUD_UPDATE_URL, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
                 'X-Master-Key': "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS",
-                'X-Bin-Versioning': 'false' // 🛑 يمنع السيرفر من إنشاء نُسخ قديمة ويحدث نفس النسخة فوراً
+                'X-Bin-Versioning': 'false' 
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(cleanPayload)
         });
     } catch(e) { 
         console.log("تم الحفظ بنجاح في ذاكرة المتصفح الاحتياطية."); 

@@ -1,7 +1,10 @@
 // 🔑 إعدادات السيستم المستقل
 const YOUTUBE_API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const YOUTUBE_CHANNEL_ID = "UCZwO3TMEASfTcKCzYMBxy3w";
-const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc"; // رابط السيرفر السحابي الجديد الخاص بك
+// 🌐 تم تعديل الرابط السحابي هنا لإجبار النظام على قراء النسخة الأحدث دائماً
+const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc/latest"; 
+// 🌐 رابط خاص بعملية التحديث المباشر بدون توليد نسخ فرعية مكررة
+const CLOUD_UPDATE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc";
 
 let showAllChannels = false;
 let showAllComments = false; 
@@ -14,14 +17,13 @@ async function fetchLiveSubscribers() {
         if (response.ok) {
             const data = await response.json();
             if (data.items && data.items.length > 0) {
-                // استخراج عدد المشتركين وتحويله إلى رقم صحيح
                 return parseInt(data.items[0].statistics.subscriberCount);
             }
         }
     } catch (error) {
         console.error("⚠️ فشل استدعاء طاقة اليوتيوب الحية، سيتم الاعتماد على الطاقة الاحتياطية:", error);
     }
-    return null; // تعني فشل الجلب وسيعتمد النظام على القيمة الاحتياطية
+    return null; 
 }
 
 // دالة جلب البيانات من السيرفر السحابي بأمان والتأكد من وجود المصفوفات
@@ -30,13 +32,11 @@ async function loadCloudData() {
         const response = await fetch(CLOUD_STORAGE_URL, {
             method: 'GET',
             headers: {
-                // 🔑 مفتاح الـ Master Key لفك تشفير وتصريح العبور
                 "X-Master-Key": "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS"
             }
         });
         if (response.ok) {
             const data = await response.json();
-            // JSONBin يعيد البيانات دائماً داخل كائن مسمى record
             const record = data.record || data; 
             return {
                 commentsList: record.commentsList || [],
@@ -46,7 +46,6 @@ async function loadCloudData() {
     } catch (e) { 
         console.warn("فشل الاتصال بالسيرفر السحابي، جاري تشغيل النظام محلياً عبر الذاكرة الاحتياطية."); 
     }
-    // نظام حماية محلي (Fallback) في حال عدم الاتصال بالسيرفر
     return { 
         commentsList: JSON.parse(localStorage.getItem('localComments') || '[]'), 
         channelsList: JSON.parse(localStorage.getItem('localChannels') || '[]') 
@@ -55,14 +54,12 @@ async function loadCloudData() {
 
 // الدالة الأساسية لتحديث النظام بالكامل بناءً على عدد المشتركين
 async function updateSystem() {
-    // 🌐 جلب المشتركين تلقائياً، وفي حال الفشل أو انتهاء الـ Quota يعود للقيمة الاحتياطية الحالية لقناتك (303)
     const liveSubs = await fetchLiveSubscribers();
     const currentSubs = liveSubs !== null ? liveSubs : 303; 
     
-    // 1️⃣ حساب المستوى (ليفل القناة) بناءً على أوامر السيستم الجديدة
     let currentLvl = 1;
     let nextLevelSubs = 100;
-    let prevLevelSubs = 0; // مضاف لحساب شريط التقدم بدقة داخل اللفل الحالي
+    let prevLevelSubs = 0; 
 
     if (currentSubs < 100) { 
         currentLvl = 1; nextLevelSubs = 100; prevLevelSubs = 0; 
@@ -75,18 +72,15 @@ async function updateSystem() {
     } else if (currentSubs < 1000) { 
         currentLvl = 5; nextLevelSubs = 1000; prevLevelSubs = 400; 
     } else {
-        // من لفل 6 فما فوق: كل لفل يتطلب 1,000 مشترك إضافي
         currentLvl = Math.floor(currentSubs / 1000) + 5;
         nextLevelSubs = (currentLvl - 4) * 1000;
         prevLevelSubs = (currentLvl - 5) * 1000;
     }
 
-    // تحديث النصوص في الواجهة
     document.getElementById('subs-display').textContent = currentSubs.toLocaleString();
     document.getElementById('next-level-subs').textContent = nextLevelSubs.toLocaleString();
     document.getElementById('current-level').textContent = `LV. ${currentLvl}`;
 
-    // 2️⃣ أمر الطور المتطور الأول (تحول الـ 1,000 مشترك الصارم)
     const systemWindow = document.getElementById('system-window');
     const rankBadge = document.getElementById('rank-badge');
     
@@ -100,13 +94,11 @@ async function updateSystem() {
         rankBadge.textContent = "الطور: الأزرق القياسي 🎬";
     }
 
-    // 3️⃣ حساب شريط التقدم بمرونة احترافية (التقدم داخل اللفل الحالي فقط بدلاً من الصفر التراكمي)
     let progressPercent = ((currentSubs - prevLevelSubs) / (nextLevelSubs - prevLevelSubs)) * 100;
     if (progressPercent > 100) progressPercent = 100;
     if (progressPercent < 0) progressPercent = 0;
     document.getElementById('progress-fill').style.width = `${progressPercent}%`;
 
-    // 4️⃣ تحديث المهارات النشطة ديناميكياً حسب اللفل الحالي
     const skillsList = document.getElementById('skills-list');
     skillsList.innerHTML = "";
     
@@ -121,23 +113,19 @@ async function updateSystem() {
         skillsList.appendChild(li);
     });
 
-    // جلب أحدث بيانات التعليقات والبوابات من السيرفر
     const cloudData = await loadCloudData();
     const comments = cloudData.commentsList;
     const channels = cloudData.channelsList;
 
-    // تحديث عدادات الطاقة الصارمة (الحالي / الأقصى المتاح)
     const maxComments = currentLvl;
     const maxChannels = currentLvl >= 4 ? Math.floor(currentLvl / 5) || 1 : 0;
     
     document.getElementById('comment-points-display').textContent = `${comments.length} / ${maxComments}`;
     document.getElementById('channel-points-display').textContent = `${channels.length} / ${maxChannels}`;
 
-    // إظهار أو إخفاء أقسام الواجهة حسب شروط اللفل
     document.getElementById('comment-summon-box').classList.toggle('hidden', currentLvl < 2);
     document.getElementById('alliance-section').classList.toggle('hidden', currentLvl < 4);
 
-    // 5️⃣ عرض تعليقات الأوفياء في الواجهة
     const commentsContainer = document.getElementById('comments-container');
     commentsContainer.innerHTML = "";
     const visibleComments = showAllComments ? comments : comments.slice(0, 3);
@@ -155,7 +143,6 @@ async function updateSystem() {
         showMoreCommentsBtn.textContent = showAllComments ? "🔼 إخفاء القائمة" : `🔽 إظهار المزيد من التعليقات (+${comments.length - 3})`;
     }
 
-    // 6️⃣ عرض بوابات دعم القنوات الحليفة
     const allianceContainer = document.getElementById('alliance-container');
     allianceContainer.innerHTML = "";
     const visibleChannels = showAllChannels ? channels : channels.slice(0, 3);
@@ -174,11 +161,9 @@ async function updateSystem() {
         showMoreChannelsBtn.textContent = showAllChannels ? "🔼 إخفاء البوابات" : `🔽 إظهار المزيد من البوابات (+${channels.length - 3})`;
     }
 
-    // تحديث قوائم الحذف الفردية داخل لوحة التحكم الإدارية
     renderAdminManageLists(comments, channels);
 }
 
-// دالة لتحديث قوائم الإدارة الفردية للعناصر داخل لوحة التحكم
 function renderAdminManageLists(comments, channels) {
     const commentManageBox = document.getElementById('admin-comments-manage-list');
     const channelManageBox = document.getElementById('admin-channels-manage-list');
@@ -203,7 +188,6 @@ function renderAdminManageLists(comments, channels) {
         channelManageBox.appendChild(div);
     });
 
-    // ربط أحداث أزرار الحذف الفردية بشكل آمن لمنع ثغرات الـ DOM
     document.querySelectorAll('.inline-delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.getAttribute('data-index'));
@@ -213,7 +197,6 @@ function renderAdminManageLists(comments, channels) {
     });
 }
 
-// 🔮 أمر إضافة عنصر جديد مع فحص جدار الطاقة الصارع للسيستم
 async function addEntry(type) {
     const cloudData = await loadCloudData();
     const currentLvl = parseInt(document.getElementById('current-level').textContent.replace('LV. ', ''));
@@ -245,7 +228,6 @@ async function addEntry(type) {
     await sendCloudUpdate(cloudData);
 }
 
-// دالة حذف عنصر مفرد بناءً على الترتيب (Index)
 async function deleteSingleItem(type, index) {
     const cloudData = await loadCloudData();
     if (type === 'comment') {
@@ -256,7 +238,6 @@ async function deleteSingleItem(type, index) {
     await sendCloudUpdate(cloudData);
 }
 
-// 🗑️ أوامر التطهير الكلي والتصفير المستقلة للقوائم
 async function clearAllData(type) {
     if(!confirm("هل أنت متأكد من رغبتك في تصفير وتطهير القائمة بالكامل؟")) return;
     const cloudData = await loadCloudData();
@@ -272,12 +253,13 @@ async function sendCloudUpdate(data) {
         localStorage.setItem('localComments', JSON.stringify(data.commentsList));
         localStorage.setItem('localChannels', JSON.stringify(data.channelsList));
         
-        // 🚀 إرسال التحديث السحابي الموثق بالمفتاح ليقبله السيرفر فوراً
-        await fetch(CLOUD_STORAGE_URL, {
+        // 🚀 تم تعديل الرابط وعناوين الإرسال لتعطيل النسخ الاحتياطية وإجبار التحديث المباشر
+        await fetch(CLOUD_UPDATE_URL, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
-                'X-Master-Key': "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS"
+                'X-Master-Key': "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS",
+                'X-Bin-Versioning': 'false' // 🛑 يمنع السيرفر من إنشاء نُسخ قديمة ويحدث نفس النسخة فوراً
             },
             body: JSON.stringify(data)
         });
@@ -292,7 +274,6 @@ async function sendCloudUpdate(data) {
     updateSystem();
 }
 
-// 🛡️ بروتوكول حماية البوابة السرية (5 ضغطات سريعة خلال 3 ثوانٍ)
 let clickCount = 0;
 let clickTimer;
 
@@ -316,7 +297,6 @@ document.getElementById('update-btn').addEventListener('click', () => {
     }
 });
 
-// ربط أزرار لوحة التحكم السرية بالإجراءات المحددة لها
 document.getElementById('save-comment-btn').addEventListener('click', () => addEntry('comment'));
 document.getElementById('save-channel-btn').addEventListener('click', () => addEntry('channel'));
 document.getElementById('delete-comment-btn').addEventListener('click', () => clearAllData('comment'));
@@ -325,5 +305,4 @@ document.getElementById('delete-channel-btn').addEventListener('click', () => cl
 document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; updateSystem(); });
 document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; updateSystem(); });
 
-// تشغيل السيستم تلقائياً عند فتح الصفحة لبدء جلب البيانات الحية
 updateSystem();

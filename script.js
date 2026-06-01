@@ -27,7 +27,13 @@ async function fetchLiveSubscribers() {
 // دالة جلب البيانات من السيرفر السحابي بأمان والتأكد من وجود المصفوفات
 async function loadCloudData() {
     try {
-        const response = await fetch(CLOUD_STORAGE_URL);
+        const response = await fetch(CLOUD_STORAGE_URL, {
+            method: 'GET',
+            headers: {
+                // 🔑 مفتاح الـ Master Key لفك تشفير وتصريح العبور
+                "X-Master-Key": "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS"
+            }
+        });
         if (response.ok) {
             const data = await response.json();
             // JSONBin يعيد البيانات دائماً داخل كائن مسمى record
@@ -207,7 +213,7 @@ function renderAdminManageLists(comments, channels) {
     });
 }
 
-// 🔮 أمر إضافة عنصر جديد مع فحص جدار الطاقة الصارم للسيستم
+// 🔮 أمر إضافة عنصر جديد مع فحص جدار الطاقة الصارع للسيستم
 async function addEntry(type) {
     const cloudData = await loadCloudData();
     const currentLvl = parseInt(document.getElementById('current-level').textContent.replace('LV. ', ''));
@@ -215,7 +221,7 @@ async function addEntry(type) {
     if (type === 'comment') {
         const maxComments = currentLvl;
         if (cloudData.commentsList.length >= maxComments) {
-            return alert("❌ طاقة لفل القناة ممتلئة! لا يمكنك استدعاء المزيد من التعليقات in هذا المستوى.");
+            return alert("❌ طاقة لفل القناة ممتلئة! لا يمكنك استدعاء المزيد من التعليقات في هذا المستوى.");
         }
         
         const userName = document.getElementById('input-fan-name').value.trim();
@@ -266,11 +272,12 @@ async function sendCloudUpdate(data) {
         localStorage.setItem('localComments', JSON.stringify(data.commentsList));
         localStorage.setItem('localChannels', JSON.stringify(data.channelsList));
         
-        // تعديل مهم: JSONBin يتطلب إرسال الحاوية بشكل مباشر، وبما أن المفاتيح غير ممررة، يفضل إرسالها دون تداخل
+        // 🚀 إرسال التحديث السحابي الموثق بالمفتاح ليقبله السيرفر فوراً
         await fetch(CLOUD_STORAGE_URL, {
             method: 'PUT',
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Master-Key': "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS"
             },
             body: JSON.stringify(data)
         });

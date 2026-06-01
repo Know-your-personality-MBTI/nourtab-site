@@ -1,8 +1,7 @@
 // 🔑 إعدادات السيستم المستقل
 const YOUTUBE_API_KEY = "AIzaSyDyanLNYpRJagmwu03_h4m-mR3i4iWkjeI"; 
 const YOUTUBE_CHANNEL_ID = "UCZwO3TMEASfTcKCzYMBxy3w";
-const CLOUD_STORAGE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc/latest"; 
-const CLOUD_UPDATE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc";
+const CLOUD_STORAGE_BASE_URL = "https://api.jsonbin.io/v3/b/665b9df021ff5e5d2449bddc"; 
 
 let showAllChannels = false;
 let showAllComments = false; 
@@ -27,22 +26,23 @@ async function fetchLiveSubscribers() {
 // دالة جلب البيانات من السيرفر السحابي بأمان والتأكد من وجود المصفوفات
 async function loadCloudData() {
     try {
-        const response = await fetch(CLOUD_STORAGE_URL, {
+        // 🚀 إضافة طابع زمني فريد (Timestamp) لإجبار المتصفحات والهواتف الأخرى على جلب البيانات الحية فوراً بدون كاش
+        const liveUrl = `${CLOUD_STORAGE_BASE_URL}/latest?nocache=${new Date().getTime()}`;
+        
+        const response = await fetch(liveUrl, {
             method: 'GET',
             headers: {
                 "X-Master-Key": "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS",
-                // 🛑 منع الكاش تماماً لإجبار المتصفحات والهواتف الأخرى على جلب البيانات الحية فوراً
-                "Cache-Control": "no-cache",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache"
             }
         });
         if (response.ok) {
             const data = await response.json();
-            // استخراج دقيق للمصفوفات سواء كانت داخل record أو مباشرة
-            const record = data.record || data;
+            const record = data.record || data; 
             return {
-                commentsList: record.commentsList || record.record?.commentsList || [],
-                channelsList: record.channelsList || record.record?.channelsList || []
+                commentsList: record.commentsList || [],
+                channelsList: record.channelsList || []
             };
         }
     } catch (e) { 
@@ -206,7 +206,7 @@ async function addEntry(type) {
     if (type === 'comment') {
         const maxComments = currentLvl;
         if (cloudData.commentsList.length >= maxComments) {
-            return alert("❌ طاقة لفل القناة ممتلئة! لا يمكنك استدعاء المزيد من التعليقات في هذا المستوى.");
+            return alert("❌ طاقة لفل القناء ممتلئة! لا يمكنك استدعاء المزيد من التعليقات في هذا المستوى.");
         }
         
         const userName = document.getElementById('input-fan-name').value.trim();
@@ -255,13 +255,12 @@ async function sendCloudUpdate(data) {
         localStorage.setItem('localComments', JSON.stringify(data.commentsList));
         localStorage.setItem('localChannels', JSON.stringify(data.channelsList));
         
-        // تجهيز مغلف نظيف للبيانات لمنع تداخل طبقات JSONBin القديمة
         const cleanPayload = {
             commentsList: data.commentsList,
             channelsList: data.channelsList
         };
 
-        await fetch(CLOUD_UPDATE_URL, {
+        await fetch(CLOUD_STORAGE_BASE_URL, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',

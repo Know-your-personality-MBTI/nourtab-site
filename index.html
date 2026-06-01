@@ -36,20 +36,62 @@
             <ul id="skills-list"></ul>
         </div>
 
+        <!-- قسم تعليقات الأوفياء -->
         <div id="comment-summon-box" class="comment-section-box hidden">
             <h3>💬 مهارة [استدعاء صوت الأوفياء]:</h3>
-            <div style="font-size: 13px; color: #ffd700; margin-bottom: 8px;">الخانات الفارغة المتبقية: <span id="comment-points-display" style="font-weight: bold;">0</span></div>
             <div id="comments-container"></div>
             <button id="show-more-comments-btn" class="show-more-btn hidden">🔽 إظهار المزيد من التعليقات</button>
         </div>
 
+        <!-- قسم قنوات الدعم الحليفة -->
         <div id="alliance-section" class="alliance-box hidden">
             <h3>🤝 بوابات الدعم: القنوات الحليفة المستيقظة</h3>
-            <div style="font-size: 13px; color: #ffd700; margin-bottom: 8px;">الخانات الفارغة المتبقية: <span id="channel-points-display" style="font-weight: bold;">0</span></div>
             <div id="alliance-container"></div>
             <button id="show-more-channels-btn" class="show-more-btn hidden">🔽 إظهار المزيد من البوابات</button>
         </div>
 
+        <!-- 👑 لوحة تحكم عاهل السيستم السرية (مؤمنة وتظهر بـ 5 ضغطات فقط) -->
+        <div id="admin-panel" class="admin-panel hidden">
+            <h3 class="admin-title">👑 لوحة تحكم عاهل السيستم السرية</h3>
+            
+            <!-- إدارة التعليقات -->
+            <div class="admin-group">
+                <h4 style="color: #ffd700; margin: 0 0 5px 0; font-size: 13px;">⚙️ إدارة تعليقات الأوفياء:</h4>
+                <div class="points-tracker">الخانات الممتلئة حالياً: <span id="comment-points-display" class="points-num">0/0</span></div>
+                
+                <label>👤 اسم المشترك:</label>
+                <input type="text" id="input-fan-name" placeholder="مثال: عبدالرحمن _ مانهوا">
+                <label>📝 نص التعليق الأسطوري:</label>
+                <textarea id="input-fan-text" placeholder="اكتب تعليقه هنا..."></textarea>
+                
+                <button id="save-comment-btn" class="admin-sub-btn">🔮 استدعاء ودمج التعليق</button>
+                
+                <h5 style="color: #ff9999; margin: 10px 0 5px 0; font-size: 11px;">🛠️ التحكم الفردي بالتعليقات المدمجة:</h5>
+                <div id="admin-comments-manage-list"></div>
+                
+                <button id="delete-comment-btn" class="admin-delete-btn" style="margin-top: 10px;">🗑️ تطهير وتصفير قائمة التعليقات</button>
+            </div>
+
+            <!-- إدارة بوابات الدعم -->
+            <div class="admin-group">
+                <h4 style="color: #ffd700; margin: 0 0 5px 0; font-size: 13px;">⚙️ إدارة بوابات الدعم:</h4>
+                <div class="points-tracker">الخانات الممتلئة حالياً: <span id="channel-points-display" class="points-num">0/0</span></div>
+                
+                <label>📢 اسم قناة المتابع:</label>
+                <input type="text" id="input-channel-name" placeholder="مثال: قناة ساسكي للمحترفين">
+                <label>🔗 رابط القناة الأصلي:</label>
+                <input type="url" id="input-channel-url" placeholder="https://youtube.com/@...">
+                
+                <button id="save-channel-btn" class="admin-sub-btn">🔥 فتح ودمج بوابة الدعم</button>
+                
+                <h5 style="color: #ff9999; margin: 10px 0 5px 0; font-size: 11px;">🛠️ التحكم الفردي بالبوابات المستيقظة:</h5>
+                <div id="admin-channels-manage-list"></div>
+                
+                <button id="delete-channel-btn" class="admin-delete-btn" style="margin-top: 10px;">🗑️ إغلاق وتصفير جميع البوابات</button>
+            </div>
+        </div>
+
+        <!-- زر التحديث الرئيسي الخارجي -->
         <div class="control-panel">
             <button id="update-btn" class="system-btn">🔄 تحديث بيانات السيستم الحالية</button>
         </div>

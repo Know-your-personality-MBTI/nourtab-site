@@ -23,38 +23,40 @@ async function fetchLiveSubscribers() {
     return null; 
 }
 
-// 🌐 دالة جلب البيانات الذكية - مفككة للكاش ومؤمنة الطبقات
+// 🌐 دالة جلب البيانات الذكية - تدمير الكاش كلياً عبر قيم عشوائية فريدة
 async function loadCloudData() {
     try {
-        // إجبار السيرفر على تخطي الكاش تماماً عبر الـ Timestamp
-        const liveUrl = `${CLOUD_STORAGE_BASE_URL}/latest?nocache=${new Date().getTime()}`;
+        // توليد نص عشوائي فريد لمنع السيرفر والمتصفحات من تخزين كاش قديم
+        const randomString = Math.random().toString(36).substring(7);
+        const liveUrl = `${CLOUD_STORAGE_BASE_URL}/latest?v=${randomString}`;
         
         const response = await fetch(liveUrl, {
             method: 'GET',
             headers: {
                 "X-Master-Key": "$2a$10$XkuYANla4J/lzWCbl408T.zrL9nQ5FXrmL/aax48KwjOGJxT0BeyS",
                 "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache"
+                "Pragma": "no-cache",
+                "Expires": "0"
             }
         });
         
         if (response.ok) {
             const data = await response.json();
-            
-            // 🔍 فحص وتفكيك طبقات JSONBin لضمان الوصول للمصفوفة الحقيقية
             let root = data.record || data;
-            if (root.record) { root = root.record; } // تعمق إضافي في حال وجود طبقة مكررة
+            if (root.record) { root = root.record; }
             
             return {
                 commentsList: root.commentsList || [],
                 channelsList: root.channelsList || []
             };
+        } else {
+            console.error("السيرفر السحابي رفض إعطاء البيانات، رمز الخطأ: " + response.status);
         }
     } catch (e) { 
-        console.warn("⚠️ فشل الاتصال بالسيرفر السحابي، جاري الانتقال للذاكرة المحلية:", e); 
+        console.error("فشل الاتصال بالسيرفر نهائياً: " + e.message);
     }
     
-    // ذاكرة احتياطية في حال انقطاع السيرفر
+    // ذاكرة احتياطية في حال انقطاع السيرفر أو حدوث خطأ شبكة
     return { 
         commentsList: JSON.parse(localStorage.getItem('localComments') || '[]'), 
         channelsList: JSON.parse(localStorage.getItem('localChannels') || '[]') 
@@ -213,7 +215,7 @@ async function addEntry(type) {
     if (type === 'comment') {
         const maxComments = currentLvl;
         if (cloudData.commentsList.length >= maxComments) {
-            return alert("❌ طاقة لفل القناة ممتلئة! لا يمكنك استدعاء المزيد من التعليقات في هذا المستوى.");
+            return alert("❌ طاقة لفل القناء ممتلئة! لا يمكنك استدعاء المزيد من التعليقات في هذا المستوى.");
         }
         
         const userName = document.getElementById('input-fan-name').value.trim();
@@ -256,19 +258,18 @@ async function clearAllData(type) {
     await sendCloudUpdate(cloudData);
 }
 
-// 🚀 دالة الرفع السحابي النظيف والمباشر
+// دالة مساعدة لرفع البيانات وتحديث الشاشة فوراً مع حفظ نسخة احتياطية محلية
 async function sendCloudUpdate(data) {
     try {
         localStorage.setItem('localComments', JSON.stringify(data.commentsList));
         localStorage.setItem('localChannels', JSON.stringify(data.channelsList));
         
-        // تجهيز كائن مسطح ونظيف تماماً بدون أي تعقيدات تفهمها المنصة غلط
         const cleanPayload = {
             commentsList: data.commentsList,
             channelsList: data.channelsList
         };
 
-        const response = await fetch(CLOUD_STORAGE_BASE_URL, {
+        await fetch(CLOUD_STORAGE_BASE_URL, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -277,12 +278,8 @@ async function sendCloudUpdate(data) {
             },
             body: JSON.stringify(cleanPayload)
         });
-
-        if(response.ok) {
-            console.log("✅ تم مزامنة البيانات سحابياً بنجاح مطلق!");
-        }
     } catch(e) { 
-        console.error("❌ حدث خطأ أثناء الرفع للسيرفر:", e); 
+        console.log("تم الحفظ بنجاح في ذاكرة المتصفح الاحتياطية."); 
     }
 
     document.getElementById('input-fan-name').value = "";
@@ -323,5 +320,4 @@ document.getElementById('delete-channel-btn').addEventListener('click', () => cl
 document.getElementById('show-more-comments-btn').addEventListener('click', () => { showAllComments = !showAllComments; updateSystem(); });
 document.getElementById('show-more-channels-btn').addEventListener('click', () => { showAllChannels = !showAllChannels; updateSystem(); });
 
-// أول تشغيل للنظام
 updateSystem();

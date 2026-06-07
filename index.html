@@ -3,101 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام ارتقاء مستوى القناة</title>
+    <title>نظام تطور المنشئ - Creator System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="system-window" class="system-window evolution-stage-1">
-        <h2>واجهة نظام ارتقاء مستوى القناة</h2>
-        
-        <hr class="system-divider">
-
-        <div class="badge-container">
-            <span id="rank-badge" class="rank-badge">الطور: الأزرق القياسي 🎬</span>
-        </div>
-
-        <div class="level-container">
-            <span class="level-label">المستوى الحالي:</span>
-            <span id="current-level" class="level-value">LV. 1</span>
-        </div>
-
-        <div class="subs-container">
-            <p>عدد المشتركين الحالي: <span id="subs-display" class="highlight">0</span></p>
-            <p>المشتركين المطلوبين للفل القادم: <span id="next-level-subs" class="highlight">100</span></p>
-        </div>
-
-        <div class="progress-bar">
-            <div id="progress-fill" class="progress-fill"></div>
-        </div>
-
-        <div class="skills-section">
-            <h3>🔮 المهارات والميزات النشطة:</h3>
-            <ul id="skills-list"></ul>
-        </div>
-
-        <!-- قسم تعليقات الأوفياء -->
-        <div id="comment-summon-box" class="comment-section-box hidden">
-            <h3>💬 مهارة [استدعاء صوت الأوفياء]:</h3>
-            <div id="comments-container"></div>
-            <button id="show-more-comments-btn" class="show-more-btn hidden">🔽 إظهار المزيد من التعليقات</button>
-        </div>
-
-        <!-- قسم قنوات الدعم الحليفة -->
-        <div id="alliance-section" class="alliance-box hidden">
-            <h3>🤝 بوابات الدعم: القنوات الحليفة المستيقظة</h3>
-            <div id="alliance-container"></div>
-            <button id="show-more-channels-btn" class="show-more-btn hidden">🔽 إظهار المزيد من البوابات</button>
-        </div>
-
-        <!-- 👑 لوحة تحكم عاهل السيستم السرية (مؤمنة وتظهر بـ 5 ضغطات فقط) -->
-        <div id="admin-panel" class="admin-panel hidden">
-            <h3 class="admin-title">👑 لوحة تحكم عاهل السيستم السرية</h3>
+    <div class="system-container">
+        <header class="system-header">
+            <div class="system-title">🛡️ تم تفعيل نظام التطور التلقائي 🛡️</div>
+            <div class="level-display" id="level-txt">LEVEL 1</div>
             
-            <!-- إدارة التعليقات -->
-            <div class="admin-group">
-                <h4 style="color: #ffd700; margin: 0 0 5px 0; font-size: 13px;">⚙️ إدارة تعليقات الأوفياء:</h4>
-                <div class="points-tracker">الخانات الممتلئة حالياً: <span id="comment-points-display" class="points-num">0/0</span></div>
-                
-                <label>👤 اسم المشترك:</label>
-                <input type="text" id="input-fan-name" placeholder="مثال: عبدالرحمن _ مانهوا">
-                <label>📝 نص التعليق الأسطوري:</label>
-                <textarea id="input-fan-text" placeholder="اكتب تعليقه هنا..."></textarea>
-                
-                <button id="save-comment-btn" class="admin-sub-btn">🔮 استدعاء ودمج التعليق</button>
-                
-                <h5 style="color: #ff9999; margin: 10px 0 5px 0; font-size: 11px;">🛠️ التحكم الفردي بالتعليقات المدمجة:</h5>
-                <div id="admin-comments-manage-list"></div>
-                
-                <button id="delete-comment-btn" class="admin-delete-btn" style="margin-top: 10px;">🗑️ تطهير وتصفير قائمة التعليقات</button>
+            <div class="exp-bar-container">
+                <div class="exp-bar" id="exp-bar"></div>
+                <div class="exp-text" id="exp-txt">0 / 100 مشترك (EXP)</div>
             </div>
 
-            <!-- إدارة بوابات الدعم -->
-            <div class="admin-group">
-                <h4 style="color: #ffd700; margin: 0 0 5px 0; font-size: 13px;">⚙️ إدارة بوابات الدعم:</h4>
-                <div class="points-tracker">الخانات الممتلئة حالياً: <span id="channel-points-display" class="points-num">0/0</span></div>
-                
-                <label>📢 اسم قناة المتابع:</label>
-                <input type="text" id="input-channel-name" placeholder="مثال: قناة ساسكي للمحترفين">
-                <label>🔗 رابط القناة الأصلي:</label>
-                <input type="url" id="input-channel-url" placeholder="https://youtube.com/@...">
-                
-                <button id="save-channel-btn" class="admin-sub-btn">🔥 فتح ودمج بوابة الدعم</button>
-                
-                <h5 style="color: #ff9999; margin: 10px 0 5px 0; font-size: 11px;">🛠️ التحكم الفردي بالبوابات المستيقظة:</h5>
-                <div id="admin-channels-manage-list"></div>
-                
-                <button id="delete-channel-btn" class="admin-delete-btn" style="margin-top: 10px;">🗑️ إغلاق وتصفير جميع البوابات</button>
-            </div>
-        </div>
+            <button class="refresh-system-btn" onclick="refreshSystemData()">
+                🔄 تحديث حالة النظام
+            </button>
+        </header>
 
-        <!-- زر التحديث الرئيسي الخارجي -->
-        <div class="control-panel">
-            <button id="update-btn" class="system-btn">🔄 تحديث بيانات السيستم الحالية</button>
+        <div class="grid-sections">
+            <div class="panel" id="panel-comment">
+                <div class="panel-title">
+                    <span>💬 تعليق المتابع المختار</span>
+                    <span class="feature-counter" id="counter-comment-view">النقاط المتاحة: 0</span>
+                </div>
+                <div id="comment-container">
+                    <div class="comment-box">
+                        <p id="display-comment">"النظام قيد التحميل... انتظر حتى يصل أول تعليق مدعوم!"</p>
+                        <span class="comment-author" id="display-author">- اسم المتابع</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel system-locked-fade" id="panel-promo">
+                <div class="panel-title">
+                    <span>🚀 دعم قنوات المتابعين (Level 10+)</span>
+                    <span class="feature-counter" id="counter-promo-view">النقاط المتاحة: 0</span>
+                </div>
+                <div id="promo-container">
+                    <div class="locked-overlay" id="promo-locked-msg">🔒 ميزة مقفلة! تفتح عند المستوى 10</div>
+                    <div class="promo-box" id="promo-active" style="display: none;">
+                        <p>القناة المختارة للدعم في هذا التطور:</p>
+                        <h3 id="display-channel-name" style="margin: 10px 0; color: var(--accent-color);">اسم القناة</h3>
+                        <a href="#" id="display-channel-link" target="_blank" class="promo-btn">زيارة ودعم القناة 🔥</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-<script src="script.js?v=3.0"></script>
+    <button class="admin-trigger" onclick="openAdminPanel()">⚙️</button>
 
+    <div class="admin-panel" id="admin-panel">
+        <h3 style="color: #ff0055; margin-bottom: 10px;">لوحة تحكم سيد النظام</h3>
+        <label>كلمة مرور النظام:</label>
+        <input type="password" id="admin-pass" placeholder="أدخل كلمة المرور">
+        <hr style="margin: 10px 0; opacity: 0.2;">
+        
+        <div id="admin-comment-section">
+            <h4 style="color: var(--primary-color);">📝 استهلاك نقطة تعليق (<span id="counter-comment-admin">0</span> متاح)</h4>
+            <label>اسم المتابع المحظوظ:</label>
+            <input type="text" id="input-author" placeholder="مثال: Otaku_Yemen">
+            <label>التعليق:</label>
+            <textarea id="input-comment" rows="2" placeholder="اكتب تعليق المتابع هنا..."></textarea>
+            <hr style="margin: 10px 0; opacity: 0.1;">
+        </div>
+        
+        <div id="admin-promo-section" style="display: none;">
+            <h4 style="color: #00f5d4;">📢 استهلاك نقطة دعم قنوات (<span id="counter-promo-admin">0</span> متاح)</h4>
+            <label>اسم القناة المدعومة:</label>
+            <input type="text" id="input-channel-name" placeholder="اسم القناة">
+            <label>رابط القناة:</label>
+            <input type="url" id="input-channel-link" placeholder="https://youtube.com/...">
+            <hr style="margin: 10px 0; opacity: 0.1;">
+        </div>
+        
+        <button onclick="saveSystemData()">تحديث بيانات النظام ⚡</button>
+        <button onclick="closeAdminPanel()" style="background:#333; margin-top:5px;">إغلاق</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

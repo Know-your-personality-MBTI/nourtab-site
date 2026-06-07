@@ -1,76 +1,92 @@
+:root {
+    --bg-color: #0b0f19;
+    --panel-bg: rgba(20, 30, 55, 0.6);
+    --primary-color: #00d2ff;
+    --glow-color: rgba(0, 210, 255, 0.5);
+    --text-color: #ffffff;
+    --accent-color: #00f5d4;
+}
+
+/* تأثيرات الانتقال بين الأطوار الهيكلية (Evolutions) */
+.evo-10 { --primary-color: #9d4edd; --glow-color: rgba(157, 78, 221, 0.6); --panel-bg: rgba(36, 16, 55, 0.7); }
+.evo-20 { --primary-color: #ff007f; --glow-color: rgba(255, 0, 127, 0.6); }
+.evo-30 { --primary-color: #ff9f1c; --glow-color: rgba(255, 159, 28, 0.6); }
+.evo-max { --primary-color: #d4af37; --glow-color: rgba(212, 175, 55, 0.8); --bg-color: #050508; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+
 body {
-    margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #050911; color: #ffffff;
-    display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background 0.8s ease;
-}
-.system-window {
-    background: rgba(6, 15, 30, 0.9); border: 2px solid #00d2ff; border-radius: 12px; padding: 25px;
-    width: 90%; max-width: 450px; box-shadow: 0 0 25px rgba(0, 210, 255, 0.3); text-align: center; backdrop-filter: blur(10px); transition: all 0.5s ease;
-}
-.system-divider { border: 0; height: 1px; background: linear-gradient(to right, transparent, #00d2ff, transparent); margin: 15px 0; }
-.badge-container { margin-bottom: 15px; }
-.rank-badge { background: rgba(0, 210, 255, 0.2); border: 1px solid #00d2ff; padding: 5px 15px; border-radius: 20px; font-size: 14px; text-shadow: 0 0 5px #00d2ff; }
-.level-value { font-size: 38px; font-weight: bold; color: #00d2ff; display: block; margin-top: 5px; text-shadow: 0 0 10px #00d2ff; }
-.subs-container { margin: 20px 0; font-size: 16px; text-align: right; }
-.highlight { color: #00d2ff; font-weight: bold; }
-.progress-bar { background: #0b1a30; border: 1px solid #00d2ff; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 25px; }
-.progress-fill { background: linear-gradient(90deg, #0088cc, #00d2ff); width: 0%; height: 100%; box-shadow: 0 0 10px #00d2ff; transition: width 1s ease; }
-.skills-section { text-align: right; margin-bottom: 20px; }
-.skills-section ul { list-style: none; padding: 0; }
-.skills-section li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-
-.comment-section-box { text-align: right; margin-bottom: 20px; }
-.single-comment-item { background: rgba(0, 210, 255, 0.04); border-right: 3px solid #00d2ff; padding: 10px; border-radius: 4px; margin-bottom: 8px; transition: all 0.3s; }
-.comment-user { color: #ffd700; font-size: 13px; margin: 0 0 4px 0; font-weight: bold; }
-.comment-text { font-style: italic; font-size: 12px; color: #eee; margin: 0; }
-
-.alliance-box { text-align: right; margin-bottom: 20px; }
-.single-alliance-item { background: rgba(15, 6, 30, 0.6); border-right: 3px solid #ffd700; padding: 10px; border-radius: 4px; margin-bottom: 8px; }
-.alliance-link { display: inline-block; background: linear-gradient(135deg, #cc9900, #ffd700); color: #000 !important; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 11px; margin-top: 5px; box-shadow: 0 0 6px #ffd700; }
-
-.show-more-btn { background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(0, 210, 255, 0.3); color: #00d2ff; width: 100%; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 5px; font-weight: bold; }
-.show-more-btn:hover { background: rgba(0, 210, 255, 0.1); }
-
-.points-tracker { background: rgba(0, 255, 102, 0.1); border: 1px solid rgba(0, 255, 102, 0.3); padding: 5px 10px; border-radius: 4px; font-size: 12px; color: #00ff66; margin-bottom: 10px; text-align: center; font-weight: bold; }
-.points-num { color: #ffffff; background: #00994d; padding: 1px 6px; border-radius: 3px; margin-right: 5px; }
-
-/* لوحة التحكم والمسؤول */
-.admin-panel { background: rgba(25, 5, 5, 0.7); border: 1px dashed #ff3333; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: right; }
-.admin-title { color: #ff3333; margin-top: 0; text-align: center; font-size: 14px; text-shadow: 0 0 5px #ff3333; }
-.admin-group { margin-bottom: 15px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
-.admin-panel label { display: block; font-size: 12px; margin: 5px 0; color: #ff9999; }
-.admin-panel input, .admin-panel textarea { width: 100%; padding: 8px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 13px; margin-bottom: 8px; }
-.admin-panel textarea { height: 45px; resize: none; }
-.admin-sub-btn { background: #00994d; color: white; border: none; padding: 8px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; margin-bottom: 5px; font-size: 12px; }
-.admin-sub-btn:hover { background: #00cc66; }
-.admin-delete-btn { background: #cc2900; color: white; border: none; padding: 8px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
-.admin-delete-btn:hover { background: #ff3300; }
-
-/* أسطر التحكم الفردية المضافة حديثاً لحذف كل عنصر لوحده */
-.item-manage-row {
-    display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05);
-    padding: 6px 10px; border-radius: 4px; margin-bottom: 5px; border: 1px solid rgba(255, 51, 51, 0.2);
-}
-.item-manage-text { font-size: 11px; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-.inline-delete-btn { background: #441111; color: #ff6666; border: 1px solid #ff3333; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
-.inline-delete-btn:hover { background: #ff3333; color: #fff; }
-
-.system-btn { background: linear-gradient(135deg, #0b1a30, #005580); border: 1px solid #00d2ff; color: white; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
-.system-btn:hover { background: #00d2ff; color: #050911; box-shadow: 0 0 15px #00d2ff; }
-.hidden { display: none !important; }
-
-.evolution-stage-2 { border-color: #00ff66; box-shadow: 0 0 25px rgba(0, 255, 102, 0.3); }
-.evolution-stage-2 .level-value, .evolution-stage-2 .highlight { color: #00ff66; text-shadow: 0 0 10px #00ff66; }
-.evolution-stage-2 .progress-fill { background: linear-gradient(90deg, #009933, #00ff66); box-shadow: 0 0 10px #00ff66; }
-.evolution-stage-3 { border-color: #ffd700; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); }
-.evolution-stage-3 .level-value, .evolution-stage-3 .highlight { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
-.evolution-stage-3 .progress-fill { background: linear-gradient(90deg, #cc9900, #ffd700); box-shadow: 0 0 10px #ffd700; }
-@keyframes greenPulse {
-    0% { box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); }
-    50% { box-shadow: 0 0 30px rgba(0, 255, 102, 0.8); }
-    100% { box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); }
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.5s ease;
+    overflow-x: hidden;
+    background-image: radial-gradient(circle at 50% 50%, var(--glow-color) 0%, transparent 80%);
 }
 
-.evolution-stage-2 { 
-    border-color: #00ff66; 
-    animation: greenPulse 2s infinite ease-in-out; /* هالة حية تتحرك حول النافذة */
+.system-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+
+.system-header {
+    background: var(--panel-bg);
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 20px var(--glow-color);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    margin-bottom: 30px;
 }
+
+.system-title { font-size: 28px; font-weight: 900; color: var(--primary-color); text-shadow: 0 0 10px var(--primary-color); margin-bottom: 20px; }
+.level-display { font-size: 48px; font-weight: 900; margin-bottom: 15px; animation: pulse 2s infinite; }
+
+.exp-bar-container { background: rgba(255,255,255,0.1); border-radius: 20px; height: 25px; border: 1px solid var(--primary-color); position: relative; overflow: hidden; margin-bottom: 20px; }
+.exp-bar { background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); height: 100%; width: 0%; transition: width 1s ease-in-out; box-shadow: 0 0 15px var(--primary-color); }
+.exp-text { position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: bold; text-shadow: 1px 1px 3px #000; }
+
+.refresh-system-btn { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.refresh-system-btn:hover { background: var(--primary-color); color: #000; box-shadow: 0 0 15px var(--primary-color); transform: scale(1.05); }
+
+/* واجهات القفل واللون الباهت للميزات المقفلة */
+.system-locked-fade {
+    filter: grayscale(1) brightness(0.4) blur(1px);
+    opacity: 0.5;
+    pointer-events: none;
+    position: relative;
+}
+
+.locked-overlay {
+    text-align: center;
+    color: #ff0055;
+    font-weight: bold;
+    padding: 20px;
+    text-shadow: 0 0 5px rgba(255,0,85,0.5);
+}
+
+.grid-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .grid-sections { grid-template-columns: 1fr; } }
+
+.panel { background: var(--panel-bg); border: 1px solid var(--primary-color); border-radius: 10px; padding: 20px; transition: all 0.5s ease; }
+.panel-title { font-size: 16px; color: var(--primary-color); border-bottom: 1px solid var(--primary-color); padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+
+.feature-counter {
+    background: rgba(0, 245, 212, 0.15);
+    color: var(--accent-color);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    border: 1px solid var(--accent-color);
+}
+
+.comment-box { font-style: italic; background: rgba(255,255,255,0.05); padding: 15px; border-left: 4px solid var(--primary-color); border-radius: 4px; }
+.comment-author { display: block; margin-top: 10px; font-weight: bold; color: var(--accent-color); font-size: 14px; }
+
+.promo-box { text-align: center; }
+.promo-btn { display: inline-block; background: var(--primary-color); color: #000; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 10px; box-shadow: 0 0 10px var(--primary-color); }
+
+.admin-trigger { position: fixed; bottom: 10px; left: 10px; background: transparent; border: none; color: rgba(255,255,255,0.1); cursor: pointer; font-size: 18px; }
+.admin-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111a2e; border: 2px solid #ff0055; padding: 25px; border-radius: 10px; z-index: 100; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(255,0,85,0.5); color: #fff; }
+.admin-panel input, .admin-panel textarea { width: 100%; padding: 10px; margin: 8px 0; background: #080d1a; border: 1px solid var(--primary-color); color: white; border-radius: 4px; }
+.admin-panel button { background: #ff0055; color: white; border: none; padding: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+
+@keyframes pulse { 0% { text-shadow: 0 0 10px var(--primary-color); } 50% { text-shadow: 0 0 25px var(--primary-color); } 100% { text-shadow: 0 0 10px var(--primary-color); } }
